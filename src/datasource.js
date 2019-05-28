@@ -50,6 +50,7 @@ function (angular, _, dateMath, moment) {
     var GRANULARITIES = [
       ['second', moment.duration(1, 'second')],
       ['minute', moment.duration(1, 'minute')],
+      ['five_minute', moment.duration(5, 'minute')],
       ['fifteen_minute', moment.duration(15, 'minute')],
       ['thirty_minute', moment.duration(30, 'minute')],
       ['hour', moment.duration(1, 'hour')],
@@ -159,6 +160,9 @@ function (angular, _, dateMath, moment) {
         //Round up to start of an interval
         //Width of bar chars in Grafana is determined by size of the smallest interval
         var roundedFrom = granularity === "all" ? from : roundUpStartTime(from, granularity);
+        if(granularity==='five_minute'){
+            granularity = {"type": "period", "period": "PT5M"}
+        }
         if(dataSource.periodGranularity!=""){
             if(granularity==='day'){
                 granularity = {"type": "period", "period": "P1D", "timeZone": dataSource.periodGranularity}
@@ -195,7 +199,7 @@ function (angular, _, dateMath, moment) {
 
       var datasource = target.druidDS;
       var filters = target.filters;
-      var aggregators = target.aggregators.map(splitCardinalityFields);
+      var aggregators = target.aggregators && target.aggregators.map(splitCardinalityFields);
       var postAggregators = target.postAggregators;
       var groupBy = _.map(target.groupBy, (e) => { return templateSrv.replace(e) });
       var limitSpec = null;
@@ -276,9 +280,7 @@ function (angular, _, dateMath, moment) {
         "intervals": intervals
       };
 
-      if (filters && filters.length > 0) {
-        query.filter = buildFilterTree(filters, scopedVars);
-      }
+      query.filter = buildFilterTree(filters, scopedVars);
 
       return this._druidQuery(query);
     };
@@ -293,9 +295,7 @@ function (angular, _, dateMath, moment) {
         "intervals": intervals
       };
 
-      if (filters && filters.length > 0) {
-        query.filter = buildFilterTree(filters, scopedVars);
-      }
+      query.filter = buildFilterTree(filters, scopedVars);
 
       return this._druidQuery(query);
     };
@@ -315,9 +315,7 @@ function (angular, _, dateMath, moment) {
         "intervals": intervals
       };
 
-      if (filters && filters.length > 0) {
-        query.filter = buildFilterTree(filters, scopedVars);
-      }
+      query.filter = buildFilterTree(filters, scopedVars);
 
       return this._druidQuery(query);
     };
@@ -335,9 +333,7 @@ function (angular, _, dateMath, moment) {
         "limitSpec": limitSpec
       };
 
-      if (filters && filters.length > 0) {
-        query.filter = buildFilterTree(filters, scopedVars);
-      }
+      query.filter = buildFilterTree(filters, scopedVars);
 
       return this._druidQuery(query);
     };
@@ -353,6 +349,57 @@ function (angular, _, dateMath, moment) {
       return backendSrv.datasourceRequest(options);
     };
 
+      
+      this.metricFindQuery = function(query) {
+        var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
+        var from = dateToMoment(range.from, false);
+        var to = dateToMoment(range.to, true);
+        var intervals = getQueryIntervals(from, to);
+
+        var params = query.split(":");
+        for(var i =0; i < params.length; i++) {
+            params[i] = templateSrv.replace(params[i]);
+        }
+        if (params[1] == 'dimensions') {
+            return this._get('/druid/v2/datasources/' + params[0]).then(function (response) {
+                var dimensions = _.map(response.data.dimensions, function (e) {
+                    return { "text": e };
+                });
+                dimensions.unshift({ "text": "--" });
+                return dimensions;
+            });
+        } else if (params[1] == 'metrics') {
+            return this._get('/druid/v2/datasources/' + params[0]).then(function (response) {
+                var metrics = _.map(response.data.metrics, function (e) {
+                    return { "text": e };
+                });
+                metrics.unshift({ "text": "--" });
+                return metrics;
+            });
+        } else {
+            var dimension = params[1];
+            var metric = "count";
+            var target = {
+                "queryType": "topN",
+                "druidDS": params[0],
+                "dimension": dimension,
+                "druidMetric": metric,
+                "aggregators": [{"type": "count", "name": metric}],
+                "intervals": [intervals],
+                "limit": 250
+            };
+            var promise = this._doQuery(from, to, 'all', target);
+            return promise.then(results => {
+                var l = _.map(results, (e) => {
+                    return {"text": e.target};
+                });
+                l.unshift({"text": "--"});
+                return l;
+            });
+        }
+    }
+      
+      
     function getLimitSpec(limitNum, orderBy) {
       return {
         "type": "default",
@@ -365,7 +412,30 @@ function (angular, _, dateMath, moment) {
 
     function buildFilterTree(filters, scopedVars) {
       //Do template variable replacement
-      var replacedFilters = filters.map(function (filter) {
+        var adhocFilters = getAdhocFilters();
+        if ((!filters || filters.length == 0) && (!adhocFilters || adhocFilters.length == 0)) {
+            return null;
+        }
+        console.log(adhocFilters);
+        var targetFilters = [];
+        if (filters) {
+            filters.forEach(function(one) {
+              targetFilters.push(one);
+            });
+        }
+        for (var n = 0; n < adhocFilters.length; n++) {
+            var f = adhocFilters[n];
+            var filter = {};
+            filter['type'] = 'selector';
+            filter['dimension'] = f['key'];
+            filter['value'] = f['value'];
+            if (f['operator'] == '!=') {
+                filter['negate'] = true;
+            }
+            targetFilters.push(filter);
+        }
+        
+      var replacedFilters = targetFilters.map(function (filter) {
         return filterTemplateExpanders[filter.type](filter, scopedVars);
       })
       .map(function (filter) {
@@ -665,6 +735,31 @@ function (angular, _, dateMath, moment) {
       return rounded;
     }
 
+      // add by wujj
+      function getAdhocFilters() {
+        let filters = [];
+        var datasourceName = instanceSettings.name;
+        if (templateSrv.variables) {
+          for (let i = 0; i < templateSrv.variables.length; i++) {
+            const variable = templateSrv.variables[i];
+            if (variable.type !== 'adhoc') {
+              continue;
+            }
+    
+            // null is the "default" datasource
+            if (variable.datasource === null || variable.datasource === datasourceName) {
+              filters = filters.concat(variable.filters);
+            } else if (variable.datasource.indexOf('$') === 0) {
+              if (this.replace(variable.datasource) === datasourceName) {
+                filters = filters.concat(variable.filters);
+              }
+            }
+          }
+        }
+    
+        return filters;
+      }
+      
    //changes druid end
   }
   return {
