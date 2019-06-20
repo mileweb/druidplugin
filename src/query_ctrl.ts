@@ -45,6 +45,8 @@ export class DruidQueryCtrl extends QueryCtrl {
       "cardinality": _.partial(this.validateCardinalityAggregator.bind(this), 'cardinality'),
       "longSum": _.partial(this.validateSimpleAggregator.bind(this), 'longSum'),
       "doubleSum": _.partial(this.validateSimpleAggregator.bind(this), 'doubleSum'),
+      "doubleMax": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMax'),
+      "doubleMin": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMin'),
       "approxHistogramFold": this.validateApproxHistogramFoldAggregator.bind(this),
       "hyperUnique": _.partial(this.validateSimpleAggregator.bind(this), 'hyperUnique'),
       "json": this.validateJsonAggregator,
@@ -232,7 +234,13 @@ export class DruidQueryCtrl extends QueryCtrl {
       if (!this.target.selectDimensions) {
         this.target.selectDimensions = [];
       }
-      this.target.selectDimensions.push(this.target.currentSelect.dimension);
+
+        var di = this.target.currentSelect.dimension;
+        if (di.indexOf("{") == 0) {
+            di = JSON.parse(di);
+        }
+
+      this.target.selectDimensions.push(di);
       this.clearCurrentSelectDimension();
     }
 
