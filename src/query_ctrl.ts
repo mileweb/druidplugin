@@ -68,7 +68,7 @@ export class DruidQueryCtrl extends QueryCtrl {
     defaultCustomGranularity = 'five_minute';
     defaultSelectDimension = "";
     defaultSelectMetric = "";
-    defaultLimit = 5;
+    defaultLimit = 10;
 
 
   /** @ngInject **/
@@ -401,13 +401,19 @@ export class DruidQueryCtrl extends QueryCtrl {
     }
 
     validateGroupByQuery(target, errs) {
-      if (target.groupBy && !Array.isArray(target.groupBy)) {
-        target.groupBy = target.groupBy.split(",");
-      }
-      if (!target.groupBy) {
-        errs.groupBy = "Must list dimensions to group by.";
-        return false;
-      }
+//      if (target.groupBy && !Array.isArray(target.groupBy)) {
+//        target.groupBy = target.groupBy.split(",");
+//      }
+//      if (!target.groupBy) {
+//        errs.groupBy = "Must list dimensions to group by.";
+//        return false;
+//      }
+
+        if (!this.target.selectDimensions || this.target.selectDimensions.length == 0) {
+            errs.selectDimensions = "Must add dimension(s).";
+            return false;
+        }
+
       if (!this.validateLimit(target, errs) || !this.validateOrderBy(target)) {
         return false;
       }
@@ -415,10 +421,16 @@ export class DruidQueryCtrl extends QueryCtrl {
     }
 
     validateTopNQuery(target, errs) {
-      if (!target.dimension) {
-        errs.dimension = "Must specify a dimension";
-        return false;
-      }
+//      if (!target.dimension) {
+//        errs.dimension = "Must specify a dimension";
+//        return false;
+//      }
+
+        if (!this.target.selectDimensions || this.target.selectDimensions.length == 0) {
+            errs.selectDimensions = "Must add dimension(s).";
+            return false;
+        }
+
       if (!target.druidMetric) {
         errs.druidMetric = "Must specify a metric";
         return false;

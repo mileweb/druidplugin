@@ -74,6 +74,7 @@
         <i class="fa fa-warning"></i>
       </label>
     </div>
+<!--
     <div ng-switch-when="groupBy" class="gf-form max-width-20">
       <label class="gf-form-label query-keyword width-9">
         Group By
@@ -83,6 +84,40 @@
         <i class="fa fa-warning"></i>
       </label>
     </div>
+-->
+    <div ng-switch-when="groupBy" class="gf-form">
+      <label class="gf-form-label query-keyword width-9">
+        Dimensions
+        <info-popover mode="right-normal">
+          (empty = *)
+        </info-popover>
+      </label>
+    </div>
+    <div class="gf-form" ng-switch-when="groupBy" ng-repeat="dim in ctrl.target.selectDimensions track by $index">
+      <label class="gf-form-label">&nbsp;{{dim}}
+        <a ng-click="ctrl.removeSelectDimension($index)">
+          <i class="fa fa-remove"></i>
+        </a>
+      </label>
+    </div>
+    <div class="gf-form" ng-switch-when="groupBy" ng-hide="ctrl.addDimensionsMode">
+      <label class="gf-form-label query-keyword">
+        <a ng-click="ctrl.addSelectDimensions()"><i class="fa fa-plus"></i></a>
+      </label>
+    </div>
+    <div class="gf-form" ng-switch-when="groupBy" ng-show="ctrl.addDimensionsMode">
+      <input type="text" class="gf-form-input input-medium" ng-model="ctrl.target.currentSelect.dimension" spellcheck='false' placeholder="dimension" data-min-length=0 data-items=100 bs-typeahead="ctrl.getDimensions" />
+      <label class="gf-form-label" ng-show="ctrl.errors.selectDimensions">
+        <a bs-tooltip="ctrl.errors.selectDimensions" style="color: rgb(229, 189, 28)">
+          <i class="fa fa-warning"></i>
+        </a>
+      </label>
+      <label class="gf-form-label">
+        <a ng-click="ctrl.addSelectDimensions()" ng-hide="ctrl.errors.selectDimensions">add tag</a>
+        <a ng-click="ctrl.clearCurrentSelectDimension()"><i class="fa fa-remove"></i></a>
+      </label>
+    </div>
+
     <div ng-switch-when="groupBy" class="gf-form">
 
       <label class="gf-form-label query-keyword width-4">

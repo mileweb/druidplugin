@@ -220,14 +220,25 @@ function (angular, _, dateMath, moment) {
         var threshold = target.limit;
         var metric = target.druidMetric;
         var dimension = templateSrv.replace(target.dimension);
+
+        if (dimension && dimension.indexOf("{") == 0) {
+            dimension = JSON.parse(dimension);
+        }
+
         promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggregators, threshold, metric, dimension, scopedVars)
           .then(function(response) {
-            return convertTopNData(response.data, dimension, metric);
+            return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
           });
       }
       else if (target.queryType === 'groupBy') {
+          groupBy = _.map(selectDimensions, function(one) {
+              if (one['outputName']) {
+                    return one['outputName'];
+              }
+              return one;
+          });
         limitSpec = getLimitSpec(target.limit, target.orderBy);
-        promise = this._groupByQuery(datasource, intervals, granularity, filters, aggregators, postAggregators, groupBy, limitSpec, scopedVars)
+        promise = this._groupByQuery(datasource, intervals, granularity, filters, aggregators, postAggregators, selectDimensions, limitSpec, scopedVars)
           .then(function(response) {
             return convertGroupByData(response.data, groupBy, metricNames);
           });
@@ -367,7 +378,7 @@ function (angular, _, dateMath, moment) {
                 var dimensions = _.map(response.data.dimensions, function (e) {
                     return { "text": e };
                 });
-                dimensions.unshift({ "text": "--" });
+                dimensions.unshift({ "text": "-" });
                 return dimensions;
             });
         } else if (params[1] == 'metrics') {
@@ -375,7 +386,7 @@ function (angular, _, dateMath, moment) {
                 var metrics = _.map(response.data.metrics, function (e) {
                     return { "text": e };
                 });
-                metrics.unshift({ "text": "--" });
+                metrics.unshift({ "text": "-" });
                 return metrics;
             });
         } else {
@@ -395,7 +406,7 @@ function (angular, _, dateMath, moment) {
                 var l = _.map(results, (e) => {
                     return {"text": e.target};
                 });
-                l.unshift({"text": "--"});
+                l.unshift({"text": "-"});
                 return l;
             });
         }
