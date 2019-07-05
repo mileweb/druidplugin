@@ -56,7 +56,8 @@ export class DruidQueryCtrl extends QueryCtrl {
       "arithmetic": this.validateArithmeticPostAggregator.bind(this),
       "max": this.validateMaxPostAggregator.bind(this),
       "min": this.validateMinPostAggregator.bind(this),
-      "quantile": this.validateQuantilePostAggregator.bind(this)
+      "quantile": this.validateQuantilePostAggregator.bind(this),
+      "javascript": this.validateJavascriptPostAggregator.bind(this)
     };
 
     arithmeticPostAggregatorFns = {'+': null, '-': null, '*': null, '/': null};
@@ -328,7 +329,11 @@ export class DruidQueryCtrl extends QueryCtrl {
       this.target.errors = this.validateTarget();
       if (!this.target.errors.currentPostAggregator) {
         //Add new post aggregator to the list
-        this.target.postAggregators.push(this.target.currentPostAggregator);
+          if (this.target.currentPostAggregator.type == 'javascript') {
+              this.target.postAggregators.push(JSON.parse(this.target.currentPostAggregator.javascript));
+          } else {
+              this.target.postAggregators.push(this.target.currentPostAggregator);
+          }
         this.clearCurrentPostAggregator();
         this.addPostAggregatorMode = false;
       }
@@ -592,6 +597,18 @@ export class DruidQueryCtrl extends QueryCtrl {
         return "Must provide a probability for the quantile post aggregator.";
       }
       return null;
+    }
+
+    validateJavascriptPostAggregator(target) {
+        try {
+            var json = JSON.parse(target.currentPostAggregator.javascript);
+            if (!json || !json['name'] || !json['fieldNames']) {
+                return "Must specify name and fieldNames.";
+            }
+        } catch (e) {
+            return "Must provide valid json post aggregator.";
+        }
+        return null;
     }
 
     validateArithmeticPostAggregator(target) {
