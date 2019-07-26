@@ -161,7 +161,15 @@ function (angular, _, dateMath, moment) {
         var granularity = target.shouldOverrideGranularity? templateSrv.replace(target.customGranularity) : computeGranularity(from, to, maxDataPoints);
         //Round up to start of an interval
         //Width of bar chars in Grafana is determined by size of the smallest interval
-        var roundedFrom = granularity === "all" ? from : roundUpStartTime(from, granularity);
+        var roundedFrom = from;
+
+          var firstChar = granularity.charAt(0);
+          if (firstChar >= '1' && firstChar <= '9') {
+              granularity = {"type": "period", "period": "PT" + granularity.toUpperCase()}
+          } else {
+              roundedFrom = granularity === "all" ? from : roundUpStartTime(from, granularity);
+          }
+
         if(granularity==='five_minute'){
             granularity = {"type": "period", "period": "PT5M"}
         }
@@ -216,6 +224,20 @@ function (angular, _, dateMath, moment) {
         selectThreshold = 5;
       }
 
+        var postAggs = [];
+        if (postAggregators && postAggregators.length) {
+            var len = postAggregators.length;
+            for (var i = 0; i < len; i++) {
+                var agg = _.clone(postAggregators[i]);
+                if (agg['function']) {
+                    agg['function'] = templateSrv.replace(agg['function'])
+                    postAggs.push(agg);
+                } else {
+                   postAggs.push(agg);
+                }
+            }
+        }
+
       if (target.queryType === 'topN') {
         var threshold = target.limit;
         var metric = target.druidMetric;
@@ -225,7 +247,7 @@ function (angular, _, dateMath, moment) {
             dimension = JSON.parse(dimension);
         }
 
-        promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggregators, threshold, metric, dimension, scopedVars)
+        promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggs, threshold, metric, dimension, scopedVars)
           .then(function(response) {
             return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
           });
@@ -238,7 +260,7 @@ function (angular, _, dateMath, moment) {
               return one;
           });
         limitSpec = getLimitSpec(target.limit, target.orderBy);
-        promise = this._groupByQuery(datasource, intervals, granularity, filters, aggregators, postAggregators, selectDimensions, limitSpec, scopedVars)
+        promise = this._groupByQuery(datasource, intervals, granularity, filters, aggregators, postAggs, selectDimensions, limitSpec, scopedVars)
           .then(function(response) {
             return convertGroupByData(response.data, groupBy, metricNames);
           });
@@ -250,7 +272,7 @@ function (angular, _, dateMath, moment) {
         });
       }
       else {
-        promise = this._timeSeriesQuery(datasource, intervals, granularity, filters, aggregators, postAggregators, scopedVars)
+        promise = this._timeSeriesQuery(datasource, intervals, granularity, filters, aggregators, postAggs, scopedVars)
           .then(function(response) {
             return convertTimeSeriesData(response.data, metricNames);
           });
