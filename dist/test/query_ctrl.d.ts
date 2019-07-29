@@ -40,6 +40,8 @@ export declare class DruidQueryCtrl extends QueryCtrl {
         "cardinality": any;
         "longSum": any;
         "doubleSum": any;
+        "doubleMax": any;
+        "doubleMin": any;
         "approxHistogramFold": any;
         "hyperUnique": any;
         "json": (target: any) => string;
@@ -50,6 +52,7 @@ export declare class DruidQueryCtrl extends QueryCtrl {
         "max": any;
         "min": any;
         "quantile": any;
+        "javascript": any;
     };
     arithmeticPostAggregatorFns: {
         '+': any;
@@ -116,6 +119,7 @@ export declare class DruidQueryCtrl extends QueryCtrl {
     validateMaxPostAggregator(target: any): string;
     validateMinPostAggregator(target: any): string;
     validateQuantilePostAggregator(target: any): string;
+    validateJavascriptPostAggregator(target: any): string;
     validateArithmeticPostAggregator(target: any): string;
     validateTarget(): any;
 }
