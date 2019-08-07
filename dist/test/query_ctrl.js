@@ -30,6 +30,8 @@ var DruidQueryCtrl = (function (_super) {
             "cardinality": lodash_1.default.partial(this.validateCardinalityAggregator.bind(this), 'cardinality'),
             "longSum": lodash_1.default.partial(this.validateSimpleAggregator.bind(this), 'longSum'),
             "doubleSum": lodash_1.default.partial(this.validateSimpleAggregator.bind(this), 'doubleSum'),
+            "doubleMax": lodash_1.default.partial(this.validateSimpleAggregator.bind(this), 'doubleMax'),
+            "doubleMin": lodash_1.default.partial(this.validateSimpleAggregator.bind(this), 'doubleMin'),
             "approxHistogramFold": this.validateApproxHistogramFoldAggregator.bind(this),
             "hyperUnique": lodash_1.default.partial(this.validateSimpleAggregator.bind(this), 'hyperUnique'),
             "json": this.validateJsonAggregator,
@@ -39,18 +41,19 @@ var DruidQueryCtrl = (function (_super) {
             "arithmetic": this.validateArithmeticPostAggregator.bind(this),
             "max": this.validateMaxPostAggregator.bind(this),
             "min": this.validateMinPostAggregator.bind(this),
-            "quantile": this.validateQuantilePostAggregator.bind(this)
+            "quantile": this.validateQuantilePostAggregator.bind(this),
+            "javascript": this.validateJavascriptPostAggregator.bind(this)
         };
         this.arithmeticPostAggregatorFns = { '+': null, '-': null, '*': null, '/': null };
         this.defaultQueryType = "timeseries";
         this.defaultFilterType = "selector";
         this.defaultAggregatorType = "count";
         this.defaultPostAggregator = { type: 'arithmetic', 'fn': '+' };
-        this.customGranularities = ['second', 'minute', 'fifteen_minute', 'thirty_minute', 'hour', 'day', 'week', 'month', 'quarter', 'year', 'all'];
-        this.defaultCustomGranularity = 'minute';
+        this.customGranularities = ['second', 'minute', 'five_minute', 'fifteen_minute', 'thirty_minute', 'hour', 'day', 'week', 'month', 'quarter', 'year', 'all'];
+        this.defaultCustomGranularity = 'five_minute';
         this.defaultSelectDimension = "";
         this.defaultSelectMetric = "";
-        this.defaultLimit = 5;
+        this.defaultLimit = 10;
         if (!this.target.queryType) {
             this.target.queryType = this.defaultQueryType;
         }
@@ -189,7 +192,11 @@ var DruidQueryCtrl = (function (_super) {
         if (!this.target.selectDimensions) {
             this.target.selectDimensions = [];
         }
-        this.target.selectDimensions.push(this.target.currentSelect.dimension);
+        var di = this.target.currentSelect.dimension;
+        if (di.indexOf("{") == 0) {
+            di = JSON.parse(di);
+        }
+        this.target.selectDimensions.push(di);
         this.clearCurrentSelectDimension();
     };
     DruidQueryCtrl.prototype.removeSelectDimension = function (index) {
@@ -263,7 +270,12 @@ var DruidQueryCtrl = (function (_super) {
         this.target.errors = this.validateTarget();
         if (!this.target.errors.currentPostAggregator) {
             //Add new post aggregator to the list
-            this.target.postAggregators.push(this.target.currentPostAggregator);
+            if (this.target.currentPostAggregator.type == 'javascript') {
+                this.target.postAggregators.push(JSON.parse(this.target.currentPostAggregator.javascript));
+            }
+            else {
+                this.target.postAggregators.push(this.target.currentPostAggregator);
+            }
             this.clearCurrentPostAggregator();
             this.addPostAggregatorMode = false;
         }
@@ -325,11 +337,15 @@ var DruidQueryCtrl = (function (_super) {
         return true;
     };
     DruidQueryCtrl.prototype.validateGroupByQuery = function (target, errs) {
-        if (target.groupBy && !Array.isArray(target.groupBy)) {
-            target.groupBy = target.groupBy.split(",");
-        }
-        if (!target.groupBy) {
-            errs.groupBy = "Must list dimensions to group by.";
+        //      if (target.groupBy && !Array.isArray(target.groupBy)) {
+        //        target.groupBy = target.groupBy.split(",");
+        //      }
+        //      if (!target.groupBy) {
+        //        errs.groupBy = "Must list dimensions to group by.";
+        //        return false;
+        //      }
+        if (!this.target.selectDimensions || this.target.selectDimensions.length == 0) {
+            errs.selectDimensions = "Must add dimension(s).";
             return false;
         }
         if (!this.validateLimit(target, errs) || !this.validateOrderBy(target)) {
@@ -338,8 +354,12 @@ var DruidQueryCtrl = (function (_super) {
         return true;
     };
     DruidQueryCtrl.prototype.validateTopNQuery = function (target, errs) {
-        if (!target.dimension) {
-            errs.dimension = "Must specify a dimension";
+        //      if (!target.dimension) {
+        //        errs.dimension = "Must specify a dimension";
+        //        return false;
+        //      }
+        if (!this.target.selectDimensions || this.target.selectDimensions.length == 0) {
+            errs.selectDimensions = "Must add dimension(s).";
             return false;
         }
         if (!target.druidMetric) {
@@ -493,6 +513,18 @@ var DruidQueryCtrl = (function (_super) {
         }
         if (!target.currentPostAggregator.probability) {
             return "Must provide a probability for the quantile post aggregator.";
+        }
+        return null;
+    };
+    DruidQueryCtrl.prototype.validateJavascriptPostAggregator = function (target) {
+        try {
+            var json = JSON.parse(target.currentPostAggregator.javascript);
+            if (!json || !json['name'] || !json['fieldNames']) {
+                return "Must specify name and fieldNames.";
+            }
+        }
+        catch (e) {
+            return "Must provide valid json post aggregator.";
         }
         return null;
     };
