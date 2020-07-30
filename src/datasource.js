@@ -271,6 +271,12 @@ function (angular, _, dateMath, moment) {
           return convertSelectData(response.data);
         });
       }
+      else if(target.queryType === 'scan'){
+        promise = this._scanQuery(datasource, intervals, columns, filters, scopedVars);
+        return promise.then(function(response){
+            return convertScanData(response.data);
+        });
+      }
       else {
         promise = this._timeSeriesQuery(datasource, intervals, granularity, filters, aggregators, postAggs, scopedVars)
           .then(function(response) {
@@ -317,6 +323,19 @@ function (angular, _, dateMath, moment) {
 
       query.filter = buildFilterTree(filters, scopedVars);
 
+      return this._druidQuery(query);
+    };
+
+    //TODO: 待添加
+    this._scanQuery = function (datasource, intervals, columns, filters, scopedVars){
+      var query = {
+        "queryType": "scan",
+        "dataSource": datasource,
+        "columns": columns,
+        "intervals": intervals
+      }
+
+      query.filter = buildFilterTree(filters, scopedVars);
       return this._druidQuery(query);
     };
 
@@ -731,6 +750,10 @@ function (angular, _, dateMath, moment) {
         }
       }
       return _.values(result);
+    }
+
+    function convertScanData(data){
+      return "convertScanData(data) Hello World!";
     }
 
     function dateToMoment(date, roundUp) {

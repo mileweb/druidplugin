@@ -4,7 +4,7 @@
   "description": "Grafana plugin for Druid real-time OLAP database",
   "main": "index.js",
   "scripts": {
-    "build": "grunt",
+    "build": "grunt --max_old_space_size=8192",
     "test": "echo \\\"Error: no test specified\\\" && exit 1"
   },
   "repository": {

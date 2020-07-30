@@ -210,6 +210,46 @@
         <i class="fa fa-warning"></i>
       </a>
     </div>
+
+    <!-- TODO: 添加Scan功能-->
+    <div ng-switch-when="scan" class="gf-form">
+      <label class="gf-form-label query-keyword width-9">
+        Columns
+        <info-popover mode="right-normal">
+          (empty = *)
+        </info-popover>
+      </label>
+    </div>    
+
+    <div class="gf-form" ng-switch-when="scan" ng-repeat="column in ctrl.target.scanColumns track by $index">
+      <label class="gf-form-label">&nbsp;{{column}}
+        <a ng-click="ctrl.removeScanColumn($index)">
+          <i class="fa fa-remove"></i>
+        </a>
+      </label>
+    </div>
+
+    <div class="gf-form" ng-switch-when="scan" ng-hide="ctrl.addScanColumnsMode">
+      <label class="gf-form-label query-keyword">
+        <a ng-click="ctrl.addScanColumns()"><i class="fa fa-plus"></i></a>
+      </label>
+    </div>
+
+    <!-- todo: 待在query_ctrl.ts中的getScanColumns方法中完善errors.scanColumns等信息 -->
+    <div class="gf-form" ng-show="ctrl.addScanColumnsMode">
+      <input type="text" class="gf-form-input input-medium" ng-model="ctrl.target.currentScan.column" spellcheck='false' placeholder="column" data-min-length=0 data-items=100 bs-typeahead="ctrl.getScanColumns" />
+      <label class="gf-form-label" ng-show="ctrl.errors.scanColumns">
+        <a bs-tooltip="ctrl.errors.scanColumns" style="color: rgb(229, 189, 28)">
+          <i class="fa fa-warning"></i>
+        </a>
+      </label>
+      <label class="gf-form-label">
+        <a ng-click="ctrl.addScanColumnsMode()" ng-hide="ctrl.errors.scanColumns">add tag</a>
+        <a ng-click="ctrl.clearCurrentScanColumn()"><i class="fa fa-remove"></i></a>
+      </label>
+    </div>
+
+
     <div ng-if="ctrl.target.queryType != 'timeseries'" class="gf-form gf-form--grow">
       <div ng-if="ctrl.target.queryType != 'timeseries'" class="gf-form-label gf-form-label--grow"></div>
     </div>

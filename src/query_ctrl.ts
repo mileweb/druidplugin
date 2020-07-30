@@ -12,8 +12,10 @@ export class DruidQueryCtrl extends QueryCtrl {
   addPostAggregatorMode: boolean;
   addDimensionsMode: boolean;
   addMetricsMode: boolean;
+  addScanColumnsMode: boolean;
   listDataSources: any;
   getDimensionsAndMetrics: any;
+  getScanColumns: any;
   getMetrics: any;
   getMetricsPlusDimensions: any;
   getDimensions: any;
@@ -31,7 +33,8 @@ export class DruidQueryCtrl extends QueryCtrl {
       "timeseries": _.noop.bind(this),
       "groupBy": this.validateGroupByQuery.bind(this),
       "topN": this.validateTopNQuery.bind(this),
-      "select": this.validateSelectQuery.bind(this)
+      "select": this.validateSelectQuery.bind(this),
+      "scan": this.validateScanQuery.bind(this)
     };
     filterValidators = {
       "selector": this.validateSelectorFilter.bind(this),
@@ -69,6 +72,7 @@ export class DruidQueryCtrl extends QueryCtrl {
     defaultCustomGranularity = 'five_minute';
     defaultSelectDimension = "";
     defaultSelectMetric = "";
+    defaultScanColumn = "";
     defaultLimit = 10;
 
 
@@ -95,6 +99,11 @@ export class DruidQueryCtrl extends QueryCtrl {
         this.target.currentSelect = {};
         this.clearCurrentSelectDimension();
         this.clearCurrentSelectMetric();
+      }
+
+      if(!this.target.currentScan){
+        this.target.currentScan = {};
+        this.clearCurrentScanColumn();
       }
 
       if (!this.target.currentAggregator) {
@@ -145,6 +154,15 @@ export class DruidQueryCtrl extends QueryCtrl {
       this.datasource.getDimensionsAndMetrics(this.target.druidDS)
         .then(callback);
     };
+
+    //TODO getScanColumns
+    this.getScanColumns = (query, callback) => {
+      console.log("getScanColumns.query: " + query);
+      this.datasource.getDimensionsAndMetrics(this.target.druidDS)
+        .then(callback);
+    };
+
+
 
     this.getFilterValues = (query, callback) => {
       let dimension = this.target.currentFilter.dimension;
@@ -276,6 +294,29 @@ export class DruidQueryCtrl extends QueryCtrl {
     clearCurrentSelectMetric() {
       this.target.currentSelect.metric = this.defaultSelectMetric;
       this.addMetricsMode = false;
+      this.targetBlur();
+    }
+
+    addScanColumns(){
+      if(!this.addScanColumnsMode){
+        this.addScanColumnsMode = true;
+        return;
+      }
+      if(!this.target.scanColumns){
+        this.target.scanColumns = [];
+      }
+      this.target.scanColumns.push(this.target.currentScan.column);
+      this.clearCurrentScanColumn();
+    }
+
+    removeScanColumn(index){
+      this.target.scanColumns.splice(index, 1);
+      this.targetBlur();
+    }
+
+    clearCurrentScanColumn(){
+      this.target.currentScan.column = this.defaultScanColumn;
+      this.addScanColumnsMode = false;
       this.targetBlur();
     }
 
@@ -453,6 +494,11 @@ export class DruidQueryCtrl extends QueryCtrl {
         return false;
       }
       return true;
+    }
+
+    //TODO 
+    validateScanQuery(target, errs){
+      return true
     }
 
     validateSelectorFilter(target) {
