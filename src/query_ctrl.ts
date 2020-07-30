@@ -156,11 +156,20 @@ export class DruidQueryCtrl extends QueryCtrl {
     };
 
     //TODO getScanColumns
+    // this.getScanColumns = (query, callback) => {
+    //   console.log("getScanColumns.query: " + query);
+    //   this.datasource.getDimensionsAndMetrics(this.target.druidDS)
+    //     .then(callback);
+    // };
+
     this.getScanColumns = (query, callback) => {
       console.log("getScanColumns.query: " + query);
-      this.datasource.getDimensionsAndMetrics(this.target.druidDS)
-        .then(callback);
+      return this.datasource.getDimensionsAndMetrics(this.target.druidDS)
+      .then(function (dimsAndMetrics) {
+      callback([].concat(dimsAndMetrics.metrics).concat(dimsAndMetrics.dimensions));
+      });
     };
+
 
 
 
