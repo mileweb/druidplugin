@@ -757,7 +757,26 @@ function (angular, _, dateMath, moment) {
     }
 
     function convertScanData(data){
-      return "convertScanData(data) Hello World!";
+      var events = _.map(data, "events");
+      var result = {};
+      for(var i = 0; i < events.length; i++){
+        var event = events[i];
+        var timestamp = event.timestamp;
+        if(_.isEmpty(timestamp)) {
+          continue;
+        }
+        for(var key in event) {
+          if(key !== "timestamp") {
+            if(!result[key]){
+              result[key] = {"target":key, "datapoints":[]};
+            }
+            result[key].datapoints.push([event[key], timestamp]);
+          }
+        }
+      }
+      console.log(_.values(result));
+      var tmp = _.values(result);
+      return _.values(result);
     }
 
     function dateToMoment(date, roundUp) {
