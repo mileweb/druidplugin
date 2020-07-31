@@ -306,7 +306,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       this.targetBlur();
     }
 
-    addScanColumns(){
+    addScanColumn(){
       if(!this.addScanColumnsMode){
         this.addScanColumnsMode = true;
         return;
@@ -316,6 +316,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       }
       this.target.scanColumns.push(this.target.currentScan.column);
       this.clearCurrentScanColumn();
+      this.targetBlur();
     }
 
     removeScanColumn(index){
@@ -740,7 +741,7 @@ export class DruidQueryCtrl extends QueryCtrl {
         }
       }
 
-      if (_.isEmpty(this.target.aggregators) && !_.isEqual(this.target.queryType, "select")) {
+      if (_.isEmpty(this.target.aggregators) && !_.isEqual(this.target.queryType, "select") && !_.isEqual(this.target.queryType, "scan")) {
         errs.aggregators = "You must supply at least one aggregator";
       }
 
