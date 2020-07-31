@@ -765,7 +765,7 @@ function (angular, _, dateMath, moment) {
 
     function convertScanData(data){
       var eventsList = _.map(data, "events");
-      var eventList = eventsList.flatten(eventsList);
+      var eventList = _.flatten(eventsList);
 
       var result = {};
       for(var i = 0; i < eventList.length; i++){
