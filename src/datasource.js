@@ -220,6 +220,10 @@ function (angular, _, dateMath, moment) {
       var selectMetrics = target.selectMetrics;
       var selectDimensions = target.selectDimensions;
       var selectThreshold = target.selectThreshold;
+
+      //todo: 给columns赋值
+      var scanColumns = target.scanColumns;
+
       if(!selectThreshold) {
         selectThreshold = 5;
       }
@@ -272,7 +276,7 @@ function (angular, _, dateMath, moment) {
         });
       }
       else if(target.queryType === 'scan'){
-        promise = this._scanQuery(datasource, intervals, columns, filters, scopedVars);
+        promise = this._scanQuery(datasource, intervals, scanColumns, filters, scopedVars);
         return promise.then(function(response){
             return convertScanData(response.data);
         });
