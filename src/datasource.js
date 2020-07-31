@@ -764,10 +764,12 @@ function (angular, _, dateMath, moment) {
     }
 
     function convertScanData(data){
-      var events = _.map(data, "events");
+      var eventsList = _.map(data, "events");
+      var eventList = eventsList.flatten(eventsList);
+
       var result = {};
-      for(var i = 0; i < events.length; i++){
-        var event = events[i];
+      for(var i = 0; i < eventList.length; i++){
+        var event = eventList[i];
         var timestamp = moment(event.__time).format('YYYY-MM-DD hh:mm:ss');
         if(_.isEmpty(timestamp)) {
           continue;
@@ -780,6 +782,7 @@ function (angular, _, dateMath, moment) {
         }
       }
       console.log(_.values(result));
+      //todo: 待删除
       var tmp = _.values(result);
       return _.values(result);
     }
