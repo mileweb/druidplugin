@@ -722,6 +722,13 @@ function (angular, _, dateMath, moment) {
         });
       }, {});
 
+      //todo: 待删除
+      var test = _.map(mergedData, function (vals, key) {
+        return {
+          target: key,
+          datapoints: vals
+        };
+      });
       return _.map(mergedData, function (vals, key) {
         /*
           Second map converts the aggregated object into an array
