@@ -772,7 +772,7 @@ function (angular, _, dateMath, moment) {
         var event = eventList[i];
         // var timestamp = moment(event.__time).format('YYYY-MM-DD hh:mm:ss');
         var timestamp = event.__time;
-        if(_.isEmpty(timestamp)) {
+        if(_.isInteger(timestamp)) {
           continue;
         }
         for(var key in event) {
