@@ -795,7 +795,7 @@ function (angular, _, dateMath, moment) {
       //todo: 待删除
       var tmp = _.values(result);
 
-      var result = [
+      var tmpResult = [
         {
           "columns": [
             {
@@ -836,7 +836,7 @@ function (angular, _, dateMath, moment) {
           "type": "table"
         }
       ]
-      return result;
+      return tmpResult;
       // return _.values(result);
     }
 
