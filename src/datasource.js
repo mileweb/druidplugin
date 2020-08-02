@@ -815,22 +815,22 @@ function (angular, _, dateMath, moment) {
             [
               1595997350000,
               0,
-              ngportal.quantil.com
+              "ngportal.quantil.com"
             ],
             [
               1595997350000,
               278,
-              ngportal.quantil.com
+              "ngportal.quantil.com"
             ],
             [
               1595997390000,
               0,
-              ngportal.quantil.com
+              "ngportal.quantil.com"
             ],	  
             [
               1595997390000,
               278,
-              ngportal.quantil.com
+              "ngportal.quantil.com"
             ]
           ],
           "type": "table"
