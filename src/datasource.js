@@ -771,15 +771,23 @@ function (angular, _, dateMath, moment) {
       for(var i = 0; i < eventList.length; i++){
         var event = eventList[i];
         // var timestamp = moment(event.__time).format('YYYY-MM-DD hh:mm:ss');
-        var timestamp = event.__time;
-        if(!_.isInteger(timestamp)) {
+        // var timestamp = event.__time;
+        // if(!_.isInteger(timestamp)) {
+        //   continue;
+        // }
+
+        var timestamp = event.timestamp;
+        if(_.isEmpty(timestamp)) {
           continue;
         }
+
         for(var key in event) {
+          if(key !== "timestamp") {
             if(!result[key]){
               result[key] = {"target":key, "datapoints":[]};
             }
             result[key].datapoints.push([event[key], timestamp]);
+          }
         }
       }
       console.log(_.values(result));
