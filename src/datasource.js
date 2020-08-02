@@ -794,7 +794,50 @@ function (angular, _, dateMath, moment) {
       console.log(_.values(result));
       //todo: 待删除
       var tmp = _.values(result);
-      return _.values(result);
+
+      var result = [
+        {
+          "columns": [
+            {
+              "text": "Time",
+              "type": "time",
+              "sort": true,
+              "desc": true,
+            },
+            {
+              "text": "clt_tf_up",
+            },
+            {
+              "text": "chan",
+            }
+          ],
+          "rows": [
+            [
+              1595997350000,
+              0,
+              ngportal.quantil.com
+            ],
+            [
+              1595997350000,
+              278,
+              ngportal.quantil.com
+            ],
+            [
+              1595997390000,
+              0,
+              ngportal.quantil.com
+            ],	  
+            [
+              1595997390000,
+              278,
+              ngportal.quantil.com
+            ]
+          ],
+          "type": "table"
+        }
+      ]
+      return result;
+      // return _.values(result);
     }
 
     function dateToMoment(date, roundUp) {
