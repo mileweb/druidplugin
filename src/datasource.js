@@ -335,8 +335,8 @@ function (angular, _, dateMath, moment) {
       var query = {
         "queryType": "scan",
         "dataSource": datasource,
+        "resultFormat": "compactedList",
         "columns": columns,
-        "legacy": true,
         "intervals": intervals
       }
 
@@ -769,15 +769,15 @@ function (angular, _, dateMath, moment) {
       var eventList = _.flatten(eventsList);
 
       var result = {};
+      result.columns
+      result.rows = eventsList;
+      result.type = "table";
+
       for(var i = 0; i < eventList.length; i++){
         var event = eventList[i];
-        // var timestamp = moment(event.__time).format('YYYY-MM-DD hh:mm:ss');
-        // var timestamp = event.__time;
-        // if(!_.isInteger(timestamp)) {
-        //   continue;
-        // }
 
-        var timestamp = event.timestamp;
+
+        var timestamp = event.__time;
         if(_.isEmpty(timestamp)) {
           continue;
         }
@@ -813,22 +813,22 @@ function (angular, _, dateMath, moment) {
           ],
           "rows": [
             [
-              1595997350000,
+              "2020-07-29T04:35:50.000Z",
               0,
               "ngportal.quantil.com"
             ],
             [
-              1595997350000,
+              "2020-07-29T04:35:50.000Z",
               278,
               "ngportal.quantil.com"
             ],
             [
-              1595997390000,
+              "2020-07-29T04:36:30.000Z",
               0,
               "ngportal.quantil.com"
             ],	  
             [
-              1595997390000,
+              "2020-07-29T04:36:30.000Z",
               278,
               "ngportal.quantil.com"
             ]
