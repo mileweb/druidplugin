@@ -336,6 +336,7 @@ function (angular, _, dateMath, moment) {
         "queryType": "scan",
         "dataSource": datasource,
         "columns": columns,
+        "legacy": true,
         "intervals": intervals
       }
 
