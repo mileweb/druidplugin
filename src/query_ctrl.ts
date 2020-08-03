@@ -33,7 +33,6 @@ export class DruidQueryCtrl extends QueryCtrl {
       "timeseries": _.noop.bind(this),
       "groupBy": this.validateGroupByQuery.bind(this),
       "topN": this.validateTopNQuery.bind(this),
-      "select": this.validateSelectQuery.bind(this),
       "scan": this.validateScanQuery.bind(this)
     };
     filterValidators = {
@@ -498,13 +497,6 @@ export class DruidQueryCtrl extends QueryCtrl {
       return true;
     }
 
-    validateSelectQuery(target, errs) {
-      if (!target.selectThreshold && target.selectThreshold <= 0) {
-        errs.selectThreshold = "Must specify a positive number";
-        return false;
-      }
-      return true;
-    }
 
     //TODO 
     validateScanQuery(target, errs){
@@ -741,7 +733,7 @@ export class DruidQueryCtrl extends QueryCtrl {
         }
       }
 
-      if (_.isEmpty(this.target.aggregators) && !_.isEqual(this.target.queryType, "select") && !_.isEqual(this.target.queryType, "scan")) {
+      if (_.isEmpty(this.target.aggregators) && !_.isEqual(this.target.queryType, "scan")) {
         errs.aggregators = "You must supply at least one aggregator";
       }
 

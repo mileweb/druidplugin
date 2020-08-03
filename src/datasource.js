@@ -216,17 +216,10 @@ function (angular, _, dateMath, moment) {
       var metricNames = getMetricNames(aggregators, postAggregators);
       var intervals = getQueryIntervals(from, to);
       var promise = null;
-
-      var selectMetrics = target.selectMetrics;
       var selectDimensions = target.selectDimensions;
-      var selectThreshold = target.selectThreshold;
-
-      //todo: 给columns赋值
+      
       var scanColumns = target.scanColumns;
 
-      if(!selectThreshold) {
-        selectThreshold = 5;
-      }
 
         var postAggs = [];
         if (postAggregators && postAggregators.length) {
@@ -269,12 +262,6 @@ function (angular, _, dateMath, moment) {
             return convertGroupByData(response.data, groupBy, metricNames);
           });
       }
-      else if (target.queryType === 'select') {
-        promise = this._selectQuery(datasource, intervals, granularity, selectDimensions, selectMetrics, filters, selectThreshold, scopedVars);
-        return promise.then(function(response) {
-          return convertSelectData(response.data);
-        });
-      }
       else if(target.queryType === 'scan'){
         promise = this._scanQuery(datasource, intervals, scanColumns, filters, scopedVars);
         return promise.then(function(response){
@@ -314,23 +301,6 @@ function (angular, _, dateMath, moment) {
       });
     };
 
-    this._selectQuery = function (datasource, intervals, granularity, dimension, metric, filters, selectThreshold, scopedVars) {
-      var query = {
-        "queryType": "select",
-        "dataSource": datasource,
-        "granularity": granularity,
-        "pagingSpec": {"pagingIdentifiers": {}, "threshold": selectThreshold},
-        "dimensions": dimension,
-        "metrics": metric,
-        "intervals": intervals
-      };
-
-      query.filter = buildFilterTree(filters, scopedVars);
-
-      return this._druidQuery(query);
-    };
-
-    //TODO: 待添加
     this._scanQuery = function (datasource, intervals, columns, filters, scopedVars){
       var query = {
         "queryType": "scan",
@@ -724,13 +694,6 @@ function (angular, _, dateMath, moment) {
         });
       }, {});
 
-      //todo: 待删除
-      var test = _.map(mergedData, function (vals, key) {
-        return {
-          target: key,
-          datapoints: vals
-        };
-      });
       return _.map(mergedData, function (vals, key) {
         /*
           Second map converts the aggregated object into an array
@@ -740,29 +703,6 @@ function (angular, _, dateMath, moment) {
           datapoints: vals
         };
       });
-    }
-
-    function convertSelectData(data){
-      var resultList = _.map(data, "result");
-      var eventsList = _.map(resultList, "events");
-      var eventList = _.flatten(eventsList);
-      var result = {};
-      for(var i = 0; i < eventList.length; i++){
-        var event = eventList[i].event;
-        var timestamp = event.timestamp;
-        if(_.isEmpty(timestamp)) {
-          continue;
-        }
-        for(var key in event) {
-          if(key !== "timestamp") {
-            if(!result[key]){
-              result[key] = {"target":key, "datapoints":[]};
-            }
-            result[key].datapoints.push([event[key], timestamp]);
-          }
-        }
-      }
-      return _.values(result);
     }
 
     function convertScanData(data){
