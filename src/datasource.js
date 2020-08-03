@@ -771,12 +771,12 @@ function (angular, _, dateMath, moment) {
         results[i] = {"columns": [], "rows": [], "type": "table"};
     
         var columns = data[i].columns.map( columnName => {return {"text": columnName}});
-        // columns.unshift({
-        //     "text": "Time",
-        //     "type": "time",
-        //     "sort": true,
-        //     "desc": true
-        //   });
+        columns.splice(0, 1, {
+            "text": "Time",
+            "type": "time",
+            "sort": true,
+            "desc": true
+          });
     
         results[i].columns =columns;
     
