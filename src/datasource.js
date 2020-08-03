@@ -335,6 +335,7 @@ function (angular, _, dateMath, moment) {
       var query = {
         "queryType": "scan",
         "dataSource": datasource,
+        "legacy": true,
         "resultFormat": "compactedList",
         "columns": columns,
         "intervals": intervals
@@ -765,79 +766,24 @@ function (angular, _, dateMath, moment) {
     }
 
     function convertScanData(data){
-      var eventsList = _.map(data, "events");
-      var eventList = _.flatten(eventsList);
-
-      var result = {};
-      result.columns
-      result.rows = eventsList;
-      result.type = "table";
-
-      for(var i = 0; i < eventList.length; i++){
-        var event = eventList[i];
-
-
-        var timestamp = event.__time;
-        if(_.isEmpty(timestamp)) {
-          continue;
-        }
-
-        for(var key in event) {
-          if(key !== "timestamp") {
-            if(!result[key]){
-              result[key] = {"target":key, "datapoints":[]};
-            }
-            result[key].datapoints.push([event[key], timestamp]);
-          }
-        }
+      var results = [];
+      for(var i = 0; i < data.length; i++){
+        results[i] = {"columns": [], "rows": [], "type": "table"};
+    
+        var columns = data[i].columns.map( columnName => {return {"text": columnName}});
+        columns.unshift({
+            "text": "Time",
+            "type": "time",
+            "sort": true,
+            "desc": true
+          });
+    
+        results[i].columns =columns;
+    
+        results[i].rows = data[i].events;
       }
-      console.log(_.values(result));
-      //todo: 待删除
-      var tmp = _.values(result);
 
-      var tmpResult = [
-        {
-          "columns": [
-            {
-              "text": "Time",
-              "type": "time",
-              "sort": true,
-              "desc": true,
-            },
-            {
-              "text": "clt_tf_up",
-            },
-            {
-              "text": "chan",
-            }
-          ],
-          "rows": [
-            [
-              "2020-07-29T04:35:50.000Z",
-              0,
-              "ngportal.quantil.com"
-            ],
-            [
-              "2020-07-29T04:35:50.000Z",
-              278,
-              "ngportal.quantil.com"
-            ],
-            [
-              "2020-07-29T04:36:30.000Z",
-              0,
-              "ngportal.quantil.com"
-            ],	  
-            [
-              "2020-07-29T04:36:30.000Z",
-              278,
-              "ngportal.quantil.com"
-            ]
-          ],
-          "type": "table"
-        }
-      ]
-      return tmpResult;
-      // return _.values(result);
+      return results;
     }
 
     function dateToMoment(date, roundUp) {
