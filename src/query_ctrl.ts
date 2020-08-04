@@ -498,7 +498,6 @@ export class DruidQueryCtrl extends QueryCtrl {
     }
 
 
-    //TODO 
     validateScanQuery(target, errs){
       return true
     }

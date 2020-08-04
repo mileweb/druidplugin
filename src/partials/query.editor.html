@@ -138,7 +138,6 @@
       </label>
     </div>
 
-    <!-- TODO: 添加Scan功能-->
     <div ng-switch-when="scan" class="gf-form">
       <label class="gf-form-label query-keyword width-9">
         Columns
@@ -162,7 +161,6 @@
       </label>
     </div>
 
-    <!-- todo: 待在query_ctrl.ts中的getScanColumns方法中完善errors.scanColumns等信息 -->
     <div class="gf-form" ng-show="ctrl.addScanColumnsMode">
       <input type="text" class="gf-form-input input-medium" ng-model="ctrl.target.currentScan.column" spellcheck='false' placeholder="column" data-min-length=0 data-items=100 bs-typeahead="ctrl.getScanColumns" />
       <label class="gf-form-label" ng-show="ctrl.errors.scanColumns">
