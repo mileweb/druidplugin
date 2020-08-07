@@ -154,13 +154,6 @@ export class DruidQueryCtrl extends QueryCtrl {
         .then(callback);
     };
 
-    //TODO getScanColumns
-    // this.getScanColumns = (query, callback) => {
-    //   console.log("getScanColumns.query: " + query);
-    //   this.datasource.getDimensionsAndMetrics(this.target.druidDS)
-    //     .then(callback);
-    // };
-
     this.getScanColumns = (query, callback) => {
       console.log("getScanColumns.query: " + query);
       return this.datasource.getDimensionsAndMetrics(this.target.druidDS)
