@@ -384,8 +384,8 @@ function (angular, _, dateMath, moment) {
         var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
         // var from = dateToMoment(range.from, false);
         // var to = dateToMoment(range.to, true);
-        var from = moment();
-        var to = from(1, 'hours');
+        var from = new moment();
+        var to = from.ceil(1, 'hours');
         var intervals = getQueryIntervals(from, to);
 
         var params = query.split(":");
