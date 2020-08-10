@@ -435,7 +435,7 @@ function (angular, _, dateMath, moment) {
     }
 
     this.getFields = function(query){
-      return this.getDimensionsAndMetrics();
+      return this.getDimensionsAndMetrics(instanceSettings.name);
     }
     
 
