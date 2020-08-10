@@ -382,10 +382,10 @@ function (angular, _, dateMath, moment) {
       
       this.metricFindQuery = function(query) {
         var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
-        // var from = dateToMoment(range.from, false);
-        // var to = dateToMoment(range.to, true);
-        var from = new Date('2020-07-29T12:35:50');
-        var to = new Date('2020-07-29T12:36:00');
+        var from = dateToMoment(range.from, false);
+        var to = dateToMoment(range.to, true);
+        // var from = new Date('2020-07-29T12:35:50');
+        // var to = new Date('2020-07-29T12:36:00');
         var intervals = getQueryIntervals(from, to);
 
         var params = query.split(":");
