@@ -384,10 +384,10 @@ function (angular, _, dateMath, moment) {
         var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
         // var from = dateToMoment(range.from, false);
         // var to = dateToMoment(range.to, true);
-        // var from = moment(range.from).toDate();
-        // var to = moment(range.to).toDate();
-        var from = new Date(range.from);
-        var to = new Date(range.to);
+        var from = moment(Number(range.from));
+        var to = moment(Number(range.to));
+        // var from = new Date(range.from);
+        // var to = new Date(range.to);
         // var from = new Date('2020-07-29T12:35:50');
         // var to = new Date('2020-07-29T12:36:00');
         var intervals = getQueryIntervals(from, to);
