@@ -28,6 +28,7 @@ function (angular, _, dateMath, moment) {
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
     this.basicAuth = instanceSettings.basicAuth;
+    this.database = instanceSettings.database
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
     this.periodGranularity = instanceSettings.jsonData.periodGranularity;
@@ -435,7 +436,7 @@ function (angular, _, dateMath, moment) {
     }
 
     this.getFields = function(query){
-      return this.getDimensionsAndMetrics(instanceSettings.name);
+      return this.getDimensionsAndMetrics(this.database);
     }
     
 
