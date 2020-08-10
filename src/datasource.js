@@ -428,7 +428,12 @@ function (angular, _, dateMath, moment) {
             });
         }
     }
-      
+ 
+    
+    this.getTagKeys = function(){
+      return this.getFields({});
+    }
+
     this.getFields = function(query){
       return this.getDimensionsAndMetrics();
     }
