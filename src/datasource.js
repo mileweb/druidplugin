@@ -382,14 +382,8 @@ function (angular, _, dateMath, moment) {
       
       this.metricFindQuery = function(query) {
         var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
-        // var from = dateToMoment(range.from, false);
-        // var to = dateToMoment(range.to, true);
         var from = moment(Number(range.from));
         var to = moment(Number(range.to));
-        // var from = new Date(range.from);
-        // var to = new Date(range.to);
-        // var from = new Date('2020-07-29T12:35:50');
-        // var to = new Date('2020-07-29T12:36:00');
         var intervals = getQueryIntervals(from, to);
 
         var params = query.split(":");
@@ -422,7 +416,6 @@ function (angular, _, dateMath, moment) {
                 "druidMetric": metric,
                 "aggregators": [{"type": "count", "name": metric}],
                 "intervals": [intervals],
-                // "intervals": ["2020-07-29T12:35:50.000Z/2020-07-29T12:36:00.001Z"],
                 "limit": 250
             };
             var promise = this._doQuery(from, to, 'all', target);
@@ -436,7 +429,11 @@ function (angular, _, dateMath, moment) {
         }
     }
       
-      
+    this.getFields = function(query){
+      return this.getDimensionsAndMetrics();
+    }
+    
+
     function getLimitSpec(limitNum, orderBy) {
       return {
         "type": "default",
