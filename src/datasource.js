@@ -392,6 +392,11 @@ function (angular, _, dateMath, moment) {
 
       
       this.metricFindQuery = function(query) {
+        var element = angular.element('grafana-app');
+        var injector = element.injector();
+        var timeSrv = element.get('timeSrv');
+
+
         var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
         var from = moment(Number(range.from));
         var to = moment(Number(range.to));
