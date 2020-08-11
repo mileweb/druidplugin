@@ -24,6 +24,7 @@ function (angular, _, dateMath, moment) {
 
   /** @ngInject */
   function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv) {
+    super();
     this.type = 'druid-datasource';
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
