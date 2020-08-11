@@ -25,11 +25,11 @@ function (angular, _, dateMath, moment) {
 
   /** @ngInject */
   function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv,
-     datasourceSrv, angularComponent, angularLoader, getLegacyAngularInjector, config) {
+     datasourceSrv, getLegacyAngularInjector, config) {
 
       this.datasourceSrv = datasourceSrv;
-      this.angularComponent = angularComponent;
-      this.angularLoader = angularLoader;
+      // this.angularComponent = angularComponent;
+      // this.angularLoader = angularLoader;
       this.getLegacyAngularInjector = getLegacyAngularInjector;
       this.config = config;
 
