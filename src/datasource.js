@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2014-2015 Quantiply Corporation. All rights reserved.
  *
@@ -23,13 +24,21 @@ function (angular, _, dateMath, moment) {
   'use strict';
 
   /** @ngInject */
-  function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv) {
+  function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv,
+     dataSourceSrv, angularComponent, angularLoader, getLegacyAngularInjector, config) {
+
+      this.dataSourceSrv = dataSourceSrv;
+      this.angularComponent = angularComponent;
+      this.angularLoader = angularLoader;
+      this.getLegacyAngularInjector = getLegacyAngularInjector;
+      this.config = config;
+
     this.type = 'druid-datasource';
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
     this.basicAuth = instanceSettings.basicAuth;
     // this.database = instanceSettings.database
-    this.database = instanceSettings.database
+    // this.database = instanceSettings.database
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
     this.periodGranularity = instanceSettings.jsonData.periodGranularity;
