@@ -1,3 +1,4 @@
+const { ENGINE_METHOD_PKEY_ASN1_METHS } = require("constants");
 
 /*
  * Copyright 2014-2015 Quantiply Corporation. All rights reserved.
@@ -448,13 +449,13 @@ function (angular, _, dateMath, moment) {
  
     
     this.getTagKeys = function(){
-      var fields = this.getFields();
-
-      return _.map( fields, filedName => {return {text: filedName}});
+      return this.getFields();
     }
 
     this.getFields = function(){
-      return this.getDimensionsAndMetrics(this.database);
+      return this.getDimensionsAndMetrics(this.database).then(result => {
+        return _.map(result, fieldName => {return {text: fieldName}});
+      });
     }
     
 
