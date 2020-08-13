@@ -454,7 +454,7 @@ function (angular, _, dateMath, moment) {
 
     this.getFields = function(){
       return this.getDimensionsAndMetrics(this.database).then(result => {
-        return _.map(result, fieldName => {return {text: fieldName}});
+        return _.map(result, fieldName => {return {"text": fieldName}});
       });
     }
     
