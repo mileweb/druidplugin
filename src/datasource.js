@@ -1,5 +1,3 @@
-const { ENGINE_METHOD_PKEY_ASN1_METHS } = require("constants");
-
 /*
  * Copyright 2014-2015 Quantiply Corporation. All rights reserved.
  *
@@ -25,20 +23,13 @@ function (angular, _, dateMath, moment) {
   'use strict';
 
   /** @ngInject */
-  function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv,
-     datasourceSrv, angularLoader) {
-
-      // this.datasourceSrv = datasourceSrv;
-      // this.angularComponent = angularComponent;
-      // this.angularLoader = getAngularLoader();
-      // this.getLegacyAngularInjector = getLegacyAngularInjector();
-      // this.config = config();
+  function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv) {
 
     this.type = 'druid-datasource';
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
     this.basicAuth = instanceSettings.basicAuth;
-    this.database = instanceSettings.jsonData.esVersion;
+    this.adhocFilterDS = instanceSettings.jsonData.esVersion;
     // this.database = instanceSettings.database
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
@@ -394,10 +385,6 @@ function (angular, _, dateMath, moment) {
       
       this.metricFindQuery = function(query) {
         var element = angular.element('grafana-app');
-        //todo: 待删除
-        var injector = element.injector();
-        var timeSrv = element.get('timeSrv');
-
 
         var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
         var from = moment(Number(range.from));
@@ -453,10 +440,10 @@ function (angular, _, dateMath, moment) {
     }
 
     this.getFields = function(){
-      return this.getDimensionsAndMetrics(this.database);
-      // return this.getDimensionsAndMetrics(this.database).then(result => {
-      //   return _.map(result, fieldName => {return {"text": fieldName}});
-      // });
+      // return this.getDimensionsAndMetrics(this.database);
+      return this.getDimensionsAndMetrics(this.adhocFilterDS).then(result => {
+        return _.map(result, fieldName => {return {"text": fieldName}});
+      });
     }
     
 
