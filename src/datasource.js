@@ -410,7 +410,7 @@ function (angular, _, dateMath, moment) {
                 return metrics;
             });
         } else {
-          return this._topNQueryForVar(params[1], params[0], intervals);
+          // return this._topNQueryForVar(params[1], params[0], intervals);
             var dimension = params[1];
             var metric = "count";
             var target = {
@@ -447,7 +447,26 @@ function (angular, _, dateMath, moment) {
       var to = moment(Number(range.to));
       var intervals = getQueryIntervals(from, to);
 
-      return this._topNQueryForVar(options.key, this.adhocFilterDS, intervals);
+      // return this._topNQueryForVar(options.key, this.adhocFilterDS, intervals);
+      var metric = "count";
+      var target = {
+          "queryType": "topN",
+          "druidDS": this.adhocFilterDS,
+          "dimension": options.key,
+          "druidMetric": metric,
+          "aggregators": [{"type": "count", "name": metric}],
+          "intervals": [intervals],
+          "limit": 250
+      };
+      var promise = this._doQuery(from, to, 'all', target);
+      return promise.then(results => {
+          var l = _.map(results, (e) => {
+              return {"text": e.target};
+          });
+          l.unshift({"text": "-"});
+          return l;
+      });
+  }     
     }
 
 
