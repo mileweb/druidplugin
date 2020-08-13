@@ -452,7 +452,7 @@ function (angular, _, dateMath, moment) {
     }
 
     this.getFields = function(query){
-      return this.getDimensionsAndMetrics(this.esVersion);
+      return this.getDimensionsAndMetrics(this.database);
     }
     
 
