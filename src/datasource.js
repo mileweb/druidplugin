@@ -440,9 +440,11 @@ function (angular, _, dateMath, moment) {
     }
 
     this.getFields = function(){
-      // return this.getDimensionsAndMetrics(this.database);
+
+      var results = this.getDimensionsAndMetrics(this.adhocFilterDS);
+
       return this.getDimensionsAndMetrics(this.adhocFilterDS).then(result => {
-        return _.map(result, fieldName => {return {"text": fieldName}});
+        return _.map(result[0], fieldName => {return {"text": fieldName}});
       });
     }
     
