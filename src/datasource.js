@@ -384,8 +384,6 @@ function (angular, _, dateMath, moment) {
 
       
       this.metricFindQuery = function(query) {
-        var element = angular.element('grafana-app');
-
         var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
         var from = moment(Number(range.from));
         var to = moment(Number(range.to));
@@ -412,6 +410,7 @@ function (angular, _, dateMath, moment) {
                 return metrics;
             });
         } else {
+          return this._topNQueryForVar(params[1], params[0], intervals);
             var dimension = params[1];
             var metric = "count";
             var target = {
@@ -436,17 +435,21 @@ function (angular, _, dateMath, moment) {
  
     
     this.getTagKeys = function(){
-      return this.getFields();
-    }
-
-    this.getFields = function(){
-
       return this.getDimensionsAndMetrics(this.adhocFilterDS).then(result => {
         var fields = [].concat(result.metrics).concat(result.dimensions);
         return _.map(fields, fieldName => {return {"text": fieldName}});
       });
     }
-    
+
+    this.getTagValues = function(options){
+      var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
+      var from = moment(Number(range.from));
+      var to = moment(Number(range.to));
+      var intervals = getQueryIntervals(from, to);
+
+      return this._topNQueryForVar(options.key, this.adhocFilterDS, intervals);
+    }
+
 
     function getLimitSpec(limitNum, orderBy) {
       return {
@@ -806,6 +809,29 @@ function (angular, _, dateMath, moment) {
         return filters;
       }
       
+
+    this._topNQueryForVar = function(dimension, datasource, intervals){
+      var metric = "count";
+      var target = {
+          "queryType": "topN",
+          "druidDS": datasource,
+          "dimension": dimension,
+          "druidMetric": metric,
+          "aggregators": [{"type": "count", "name": metric}],
+          "intervals": [intervals],
+          "limit": 250
+      };
+      var promise = this._doQuery(from, to, 'all', target);
+      return promise.then(results => {
+          var l = _.map(results, (e) => {
+              return {"text": e.target};
+          });
+          l.unshift({"text": "-"});
+          return l;
+      });
+    }
+
+
    //changes druid end
   }
   return {
