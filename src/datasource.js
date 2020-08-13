@@ -448,7 +448,9 @@ function (angular, _, dateMath, moment) {
  
     
     this.getTagKeys = function(){
-      return this.getFields().map( filedName => {return {text: filedName}});
+      var fields = this.getFields();
+
+      return _.map( fields, filedName => {return {text: filedName}});
     }
 
     this.getFields = function(){
