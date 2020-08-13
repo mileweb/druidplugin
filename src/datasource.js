@@ -37,7 +37,7 @@ function (angular, _, dateMath, moment) {
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
     this.basicAuth = instanceSettings.basicAuth;
-    this.database = instanceSettings.esVersion;
+    this.database = instanceSettings.jsonData.esVersion;
     // this.database = instanceSettings.database
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
