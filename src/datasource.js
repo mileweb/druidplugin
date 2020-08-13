@@ -447,11 +447,11 @@ function (angular, _, dateMath, moment) {
     }
  
     
-    this.getTagKeys = function(options){
-      return this.getFields({});
+    this.getTagKeys = function(){
+      return this.getFields().map( filedName => {return {text: filedName}});
     }
 
-    this.getFields = function(query){
+    this.getFields = function(){
       return this.getDimensionsAndMetrics(this.database);
     }
     
