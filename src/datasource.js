@@ -38,7 +38,7 @@ function (angular, _, dateMath, moment) {
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
     this.basicAuth = instanceSettings.basicAuth;
-    this.adhocFilterDS = instanceSettings.jsonData.esVersion;
+    this.database = instanceSettings.jsonData.esVersion;
     // this.database = instanceSettings.database
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
@@ -453,11 +453,9 @@ function (angular, _, dateMath, moment) {
     }
 
     this.getFields = function(){
-      return this.getDimensionsAndMetrics(this.adhocFilterDS);
-      // return this.getDimensionsAndMetrics(this.adhocFilterDS).then(result => {
-      //   return result;
-      //   // return _.map(result, fieldName => {return {"text": fieldName}});
-      // });
+      return this.getDimensionsAndMetrics(this.database).then(result => {
+        return _.map(result, fieldName => {return {"text": fieldName}});
+      });
     }
     
 
