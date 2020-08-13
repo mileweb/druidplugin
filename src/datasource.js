@@ -466,8 +466,7 @@ function (angular, _, dateMath, moment) {
           l.unshift({"text": "-"});
           return l;
       });
-  }     
-    }
+    }     
 
 
     function getLimitSpec(limitNum, orderBy) {
