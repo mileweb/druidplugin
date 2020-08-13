@@ -37,7 +37,7 @@ function (angular, _, dateMath, moment) {
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
     this.basicAuth = instanceSettings.basicAuth;
-    // this.database = instanceSettings.database
+    this.database = instanceSettings.esVersion;
     // this.database = instanceSettings.database
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
@@ -393,6 +393,7 @@ function (angular, _, dateMath, moment) {
       
       this.metricFindQuery = function(query) {
         var element = angular.element('grafana-app');
+        //todo: 待删除
         var injector = element.injector();
         var timeSrv = element.get('timeSrv');
 
@@ -451,7 +452,7 @@ function (angular, _, dateMath, moment) {
     }
 
     this.getFields = function(query){
-      return this.getDimensionsAndMetrics("nginxflow10s");
+      return this.getDimensionsAndMetrics(this.esVersion);
     }
     
 
