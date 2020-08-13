@@ -441,12 +441,10 @@ function (angular, _, dateMath, moment) {
 
     this.getFields = function(){
 
-      var results = this.getDimensionsAndMetrics(this.adhocFilterDS);
-
-      return results;
-      // return this.getDimensionsAndMetrics(this.adhocFilterDS).then(result => {
-      //   return _.map(result[0], fieldName => {return {"text": fieldName}});
-      // });
+      return this.getDimensionsAndMetrics(this.adhocFilterDS).then(result => {
+        var fields = [].concat(dimsAndMetrics.metrics).concat(dimsAndMetrics.dimensions)
+        return _.map(fields, fieldName => {return {"text": fieldName}});
+      });
     }
     
 
