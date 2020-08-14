@@ -8,7 +8,8 @@ export class DruidConfigCtrl {
   current: any;
 
   constructor($scope) {
-    this.current.jsonData.adhocFilterDS = this.current.jsonData.adhocFilterDS;
+    // this.current.jsonData.adhocFilterDS = this.current.jsonData.adhocFilterDS;
+    // this.current.jsonData.periodGranularity = this.current.jsonData.periodGranularity;    
   }
 
 }
