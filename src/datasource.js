@@ -448,13 +448,14 @@ function (angular, _, dateMath, moment) {
       var intervals = getQueryIntervals(from, to);
 
       // return this._topNQueryForVar(options.key, this.adhocFilterDS, intervals);
+      var dimension = options.key;
       var metric = "count";
       var query = {
           "queryType": "topN",
           "dataSource": this.adhocFilterDS,
           "granularity": 'all',
           "threshold": 250,          
-          "dimension": options.key,
+          "dimension": dimension,
           "metric": metric,
           "aggregations": [{"type": "count", "name": metric}],
           "intervals": intervals,
