@@ -455,8 +455,8 @@ function (angular, _, dateMath, moment) {
           "granularity": 'all',
           "threshold": 250,          
           "dimension": options.key,
-          "druidMetric": metric,
-          "aggregators": [{"type": "count", "name": metric}],
+          "metric": metric,
+          "aggregations": [{"type": "count", "name": metric}],
           "intervals": intervals,
       };
       var promise = this._druidQuery(query);
