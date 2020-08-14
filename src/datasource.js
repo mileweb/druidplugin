@@ -433,57 +433,6 @@ function (angular, _, dateMath, moment) {
         }
     }
  
-    
-    this.getTagKeys = function(){
-      return this.getDimensionsAndMetrics(this.adhocFilterDS).then(result => {
-        var fields = [].concat(result.metrics).concat(result.dimensions);
-        return _.map(fields, fieldName => {return {"text": fieldName}});
-      });
-    }
-
-    this.getTagValues = function(options){
-      var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
-      var from = moment(Number(range.from));
-      var to = moment(Number(range.to));
-      var intervals = getQueryIntervals(from, to);
-
-      // return this._topNQueryForVar(options.key, this.adhocFilterDS, intervals);
-      var dimension = options.key;
-      var metric = "count";
-      var query = {
-          "queryType": "topN",
-          "dataSource": this.adhocFilterDS,
-          "granularity": 'all',
-          "threshold": 250,          
-          "dimension": dimension,
-          "metric": metric,
-          "aggregations": [{"type": "count", "name": metric}],
-          "intervals": intervals,
-      };
-
-      var promise = this._druidQuery(query).
-        then(function(response) {
-          return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
-        }).then(function (metrics) {
-          var fromMs = formatTimestamp(from);
-          metrics.forEach(function (metric) {
-            if (!_.isEmpty(metric.datapoints[0]) && metric.datapoints[0][1] < fromMs) {
-              metric.datapoints[0][1] = fromMs;
-            }
-          });
-          return metrics;
-        });
-
-      return promise.then(results => {
-          var l = _.map(results, (e) => {
-              return {"text": e.target};
-          });
-          l.unshift({"text": "-"});
-          return l;
-      });
-    }     
-
-
     function getLimitSpec(limitNum, orderBy) {
       return {
         "type": "default",
@@ -841,7 +790,55 @@ function (angular, _, dateMath, moment) {
     
         return filters;
       }
-      
+
+    
+      this.getTagKeys = function(){
+        return this.getDimensionsAndMetrics(this.adhocFilterDS).then(result => {
+          var fields = [].concat(result.metrics).concat(result.dimensions);
+          return _.map(fields, fieldName => {return {"text": fieldName}});
+        });
+      }
+  
+      this.getTagValues = function(options){
+        var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
+        var from = moment(Number(range.from));
+        var to = moment(Number(range.to));
+        var intervals = getQueryIntervals(from, to);
+  
+        var dimension = options.key;
+        var metric = "count";
+        var query = {
+            "queryType": "topN",
+            "dataSource": this.adhocFilterDS,
+            "granularity": 'all',
+            "threshold": 250,          
+            "dimension": dimension,
+            "metric": metric,
+            "aggregations": [{"type": "count", "name": metric}],
+            "intervals": intervals,
+        };
+  
+        var promise = this._druidQuery(query).
+          then(function(response) {
+            return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
+          }).then(function (metrics) {
+            var fromMs = formatTimestamp(from);
+            metrics.forEach(function (metric) {
+              if (!_.isEmpty(metric.datapoints[0]) && metric.datapoints[0][1] < fromMs) {
+                metric.datapoints[0][1] = fromMs;
+              }
+            });
+            return metrics;
+          });
+  
+        return promise.then(results => {
+            var l = _.map(results, (e) => {
+                return {"text": e.target};
+            });
+            l.unshift({"text": "-"});
+            return l;
+        });
+      }           
 
     this._topNQueryForVar = function(dimension, datasource, intervals){
       var metric = "count";
