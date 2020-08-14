@@ -30,7 +30,6 @@ function (angular, _, dateMath, moment) {
     this.name = instanceSettings.name;
     this.basicAuth = instanceSettings.basicAuth;
     this.adhocFilterDS = instanceSettings.jsonData.adhocFilterDS;
-    // this.database = instanceSettings.database
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
     this.periodGranularity = instanceSettings.jsonData.periodGranularity;
@@ -334,7 +333,7 @@ function (angular, _, dateMath, moment) {
     };
 
     this._topNQuery = function (datasource, intervals, granularity, filters, aggregators, postAggregators,
-    threshold, metric, dimension, scopedVars) {
+    threshold, metric, dimension, scopedVars, isAddHocFilter) {
       var query = {
         "queryType": "topN",
         "dataSource": datasource,
@@ -348,7 +347,7 @@ function (angular, _, dateMath, moment) {
         "intervals": intervals
       };
 
-      query.filter = buildFilterTree(filters, scopedVars);
+      query.filter = isAddHocFilter ? buildFilterTree(filters, scopedVars) : filters;
 
       return this._druidQuery(query);
     };
@@ -410,7 +409,8 @@ function (angular, _, dateMath, moment) {
                 return metrics;
             });
         } else {
-          // return this._topNQueryForVar(params[1], params[0], intervals);
+
+          return this._topNQueryForVar(params[1], params[0]);
             var dimension = params[1];
             var metric = "count";
             var target = {
@@ -423,6 +423,8 @@ function (angular, _, dateMath, moment) {
                 "limit": 250
             };
             var promise = this._doQuery(from, to, 'all', target);
+
+
             return promise.then(results => {
                 var l = _.map(results, (e) => {
                     return {"text": e.target};
@@ -800,6 +802,8 @@ function (angular, _, dateMath, moment) {
       }
   
       this.getTagValues = function(options){
+        return this._topNQueryForVar(options.key, this.adhocFilterDS);
+
         var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
         var from = moment(Number(range.from));
         var to = moment(Number(range.to));
@@ -817,7 +821,7 @@ function (angular, _, dateMath, moment) {
             "aggregations": [{"type": "count", "name": metric}],
             "intervals": intervals,
         };
-  
+  /** 
         var promise = this._druidQuery(query).
           then(function(response) {
             return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
@@ -830,7 +834,9 @@ function (angular, _, dateMath, moment) {
             });
             return metrics;
           });
-  
+  */
+        var promise = this._doQuery();
+
         return promise.then(results => {
             var l = _.map(results, (e) => {
                 return {"text": e.target};
@@ -840,7 +846,11 @@ function (angular, _, dateMath, moment) {
         });
       }           
 
-    this._topNQueryForVar = function(dimension, datasource, intervals){
+    this._topNQueryForVar = function(dimension, datasource){
+      var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
+      var from = moment(Number(range.from));
+      var to = moment(Number(range.to));
+
       var metric = "count";
       var target = {
           "queryType": "topN",
@@ -848,9 +858,9 @@ function (angular, _, dateMath, moment) {
           "dimension": dimension,
           "druidMetric": metric,
           "aggregators": [{"type": "count", "name": metric}],
-          "intervals": [intervals],
           "limit": 250
       };
+
       var promise = this._doQuery(from, to, 'all', target);
       return promise.then(results => {
           var l = _.map(results, (e) => {
