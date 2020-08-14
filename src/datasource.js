@@ -449,16 +449,17 @@ function (angular, _, dateMath, moment) {
 
       // return this._topNQueryForVar(options.key, this.adhocFilterDS, intervals);
       var metric = "count";
-      var target = {
+      var query = {
           "queryType": "topN",
-          "druidDS": this.adhocFilterDS,
+          "dataSource": this.adhocFilterDS,
+          "granularity": 'all',
+          "threshold": 250,          
           "dimension": options.key,
           "druidMetric": metric,
           "aggregators": [{"type": "count", "name": metric}],
           "intervals": [intervals],
-          "limit": 250
       };
-      var promise = this._doQuery(from, to, 'all', target);
+      var promise = this._druidQuery(query);
       return promise.then(results => {
           var l = _.map(results, (e) => {
               return {"text": e.target};
