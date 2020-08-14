@@ -459,7 +459,11 @@ function (angular, _, dateMath, moment) {
           "aggregations": [{"type": "count", "name": metric}],
           "intervals": intervals,
       };
-      var promise = this._druidQuery(query);
+
+      var promise = this._druidQuery(query).then(function(response) {
+        return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
+      });
+      
       return promise.then(results => {
           var l = _.map(results, (e) => {
               return {"text": e.target};
