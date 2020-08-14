@@ -457,7 +457,7 @@ function (angular, _, dateMath, moment) {
           "dimension": options.key,
           "druidMetric": metric,
           "aggregators": [{"type": "count", "name": metric}],
-          "intervals": [intervals],
+          "intervals": intervals,
       };
       var promise = this._druidQuery(query);
       return promise.then(results => {
