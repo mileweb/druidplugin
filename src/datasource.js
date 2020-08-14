@@ -381,58 +381,40 @@ function (angular, _, dateMath, moment) {
       return backendSrv.datasourceRequest(options);
     };
 
-      
-      this.metricFindQuery = function(query) {
-        var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
-        var from = moment(Number(range.from));
-        var to = moment(Number(range.to));
-        var intervals = getQueryIntervals(from, to);
+    /** Variable query action.
+     *  It is invoked by /public/app/features/templating/query_variable.getOptions() lie in grafana server endpoint.
+     *  For more details refer to https://grafana.com/docs/grafana/latest/packages_api/data/datasourceapi/#metricfindquery-method
+     *  Add by xuzh1 on 2020/08/14   
+     */        
+    this.metricFindQuery = function(query) {
+      var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
+      var from = moment(Number(range.from));
+      var to = moment(Number(range.to));
+      var intervals = getQueryIntervals(from, to);
 
-        var params = query.split(":");
-        for(var i =0; i < params.length; i++) {
-            params[i] = templateSrv.replace(params[i]);
-        }
-        if (params[1] == 'dimensions') {
-            return this._get('/druid/v2/datasources/' + params[0]).then(function (response) {
-                var dimensions = _.map(response.data.dimensions, function (e) {
-                    return { "text": e };
-                });
-                dimensions.unshift({ "text": "-" });
-                return dimensions;
-            });
-        } else if (params[1] == 'metrics') {
-            return this._get('/druid/v2/datasources/' + params[0]).then(function (response) {
-                var metrics = _.map(response.data.metrics, function (e) {
-                    return { "text": e };
-                });
-                metrics.unshift({ "text": "-" });
-                return metrics;
-            });
-        } else {
-
-          return this._topNQueryForVar(params[1], params[0]);
-            var dimension = params[1];
-            var metric = "count";
-            var target = {
-                "queryType": "topN",
-                "druidDS": params[0],
-                "dimension": dimension,
-                "druidMetric": metric,
-                "aggregators": [{"type": "count", "name": metric}],
-                "intervals": [intervals],
-                "limit": 250
-            };
-            var promise = this._doQuery(from, to, 'all', target);
-
-
-            return promise.then(results => {
-                var l = _.map(results, (e) => {
-                    return {"text": e.target};
-                });
-                l.unshift({"text": "-"});
-                return l;
-            });
-        }
+      var params = query.split(":");
+      for(var i =0; i < params.length; i++) {
+          params[i] = templateSrv.replace(params[i]);
+      }
+      if (params[1] == 'dimensions') {
+          return this._get('/druid/v2/datasources/' + params[0]).then(function (response) {
+              var dimensions = _.map(response.data.dimensions, function (e) {
+                  return { "text": e };
+              });
+              dimensions.unshift({ "text": "-" });
+              return dimensions;
+          });
+      } else if (params[1] == 'metrics') {
+          return this._get('/druid/v2/datasources/' + params[0]).then(function (response) {
+              var metrics = _.map(response.data.metrics, function (e) {
+                  return { "text": e };
+              });
+              metrics.unshift({ "text": "-" });
+              return metrics;
+          });
+      } else {
+        return this._topNQueryForVar(params[0], params[1]);
+      }
     }
  
     function getLimitSpec(limitNum, orderBy) {
@@ -793,60 +775,33 @@ function (angular, _, dateMath, moment) {
         return filters;
       }
 
-    
-      this.getTagKeys = function(){
-        return this.getDimensionsAndMetrics(this.adhocFilterDS).then(result => {
-          var fields = [].concat(result.metrics).concat(result.dimensions);
-          return _.map(fields, fieldName => {return {"text": fieldName}});
-        });
-      }
-  
-      this.getTagValues = function(options){
-        return this._topNQueryForVar(options.key, this.adhocFilterDS);
+    /** Get tag keys for adhoc filters. 
+     *  It is invoked by /public/app/features/dashboard/components/AdHocFilters/AdHocFiltersCtr.getOptions() lie in grafana server endpoint.
+     *  For more details refer to https://grafana.com/docs/grafana/latest/packages_api/data/datasourceapi/#gettagkeys-method 
+     *  Add by xuzh1 on 2020/08/14   
+     */
+    this.getTagKeys = function(){
+      return this.getDimensionsAndMetrics(this.adhocFilterDS).then(result => {
+        var fields = [].concat(result.metrics).concat(result.dimensions);
+        return _.map(fields, fieldName => {return {"text": fieldName}});
+      });
+    }
 
-        var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
-        var from = moment(Number(range.from));
-        var to = moment(Number(range.to));
-        var intervals = getQueryIntervals(from, to);
-  
-        var dimension = options.key;
-        var metric = "count";
-        var query = {
-            "queryType": "topN",
-            "dataSource": this.adhocFilterDS,
-            "granularity": 'all',
-            "threshold": 250,          
-            "dimension": dimension,
-            "metric": metric,
-            "aggregations": [{"type": "count", "name": metric}],
-            "intervals": intervals,
-        };
-  /** 
-        var promise = this._druidQuery(query).
-          then(function(response) {
-            return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
-          }).then(function (metrics) {
-            var fromMs = formatTimestamp(from);
-            metrics.forEach(function (metric) {
-              if (!_.isEmpty(metric.datapoints[0]) && metric.datapoints[0][1] < fromMs) {
-                metric.datapoints[0][1] = fromMs;
-              }
-            });
-            return metrics;
-          });
-  */
-        var promise = this._doQuery();
 
-        return promise.then(results => {
-            var l = _.map(results, (e) => {
-                return {"text": e.target};
-            });
-            l.unshift({"text": "-"});
-            return l;
-        });
-      }           
+    /** Get tag values for adhoc filters. 
+     *  It is invoked by /public/app/features/dashboard/components/AdHocFilters/AdHocFiltersCtr.getOptions() lie in grafana server endpoint.
+     *  For more details refer to https://grafana.com/docs/grafana/latest/packages_api/data/datasourceapi/#gettagvalues-method
+     *  Add by xuzh1 on 2020/08/14   
+     */
+    this.getTagValues = function(options){
+      return this._topNQueryForVar(this.adhocFilterDS, options.key);
 
-    this._topNQueryForVar = function(dimension, datasource){
+    }           
+
+    /** It is used to get tag values for adhoc filters and query variable
+     *  Add by xuzh1 on 2020/08/14   
+     */    
+    this._topNQueryForVar = function(datasource, dimension){
       var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
       var from = moment(Number(range.from));
       var to = moment(Number(range.to));
