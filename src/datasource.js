@@ -460,10 +460,19 @@ function (angular, _, dateMath, moment) {
           "intervals": intervals,
       };
 
-      var promise = this._druidQuery(query).then(function(response) {
-        return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
-      });
-      
+      var promise = this._druidQuery(query).
+        then(function(response) {
+          return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
+        }).then(function (metrics) {
+          var fromMs = formatTimestamp(from);
+          metrics.forEach(function (metric) {
+            if (!_.isEmpty(metric.datapoints[0]) && metric.datapoints[0][1] < fromMs) {
+              metric.datapoints[0][1] = fromMs;
+            }
+          });
+          return metrics;
+        });
+
       return promise.then(results => {
           var l = _.map(results, (e) => {
               return {"text": e.target};
