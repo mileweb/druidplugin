@@ -29,7 +29,7 @@ function (angular, _, dateMath, moment) {
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
     this.basicAuth = instanceSettings.basicAuth;
-    this.adhocFilterDS = instanceSettings.jsonData.esVersion;
+    this.adhocFilterDS = instanceSettings.jsonData.adhocFilterDS;
     // this.database = instanceSettings.database
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
