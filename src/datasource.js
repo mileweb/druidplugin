@@ -348,7 +348,7 @@ function (angular, _, dateMath, moment) {
         "intervals": intervals
       };
 
-      query.filter = isTopNQueryForVar ? [] : buildFilterTree(filters, scopedVars);
+      query.filter = isTopNQueryForVar ? null : buildFilterTree(filters, scopedVars);
 
       return this._druidQuery(query);
     };
