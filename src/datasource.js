@@ -798,7 +798,7 @@ function (angular, _, dateMath, moment) {
 
     }           
 
-    /** It is used to get tag values for adhoc filters and query variable.
+    /** It is used to get tag values for adhoc filters and variables.
      *  Add by xuzh1 on 2020/08/14   
      */    
     this._topNQueryForVar = function(datasource, dimension){
