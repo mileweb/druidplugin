@@ -241,12 +241,13 @@ function (angular, _, dateMath, moment) {
         var threshold = target.limit;
         var metric = target.druidMetric;
         var dimension = templateSrv.replace(target.dimension);
+        var isTopNQueryForVar = target.isTopNQueryForVar
 
         if (dimension && dimension.indexOf("{") == 0) {
             dimension = JSON.parse(dimension);
         }
 
-        promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggs, threshold, metric, dimension, scopedVars)
+        promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggs, threshold, metric, dimension, scopedVars, isTopNQueryForVar)
           .then(function(response) {
             return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
           });
@@ -333,7 +334,7 @@ function (angular, _, dateMath, moment) {
     };
 
     this._topNQuery = function (datasource, intervals, granularity, filters, aggregators, postAggregators,
-    threshold, metric, dimension, scopedVars) {
+    threshold, metric, dimension, scopedVars, isTopNQueryForVar) {
       var query = {
         "queryType": "topN",
         "dataSource": datasource,
@@ -347,7 +348,7 @@ function (angular, _, dateMath, moment) {
         "intervals": intervals
       };
 
-      query.filter = buildFilterTree(filters, scopedVars);
+      query.filter = isTopNQueryForVar ? [] : buildFilterTree(filters, scopedVars);
 
       return this._druidQuery(query);
     };
@@ -813,7 +814,8 @@ function (angular, _, dateMath, moment) {
           "dimension": dimension,
           "druidMetric": metric,
           "aggregators": [{"type": "count", "name": metric}],
-          "limit": 250
+          "limit": 250,
+          "isTopNQueryForVar": true
       };
 
       var promise = this._doQuery(from, to, 'all', target);
