@@ -333,7 +333,7 @@ function (angular, _, dateMath, moment) {
     };
 
     this._topNQuery = function (datasource, intervals, granularity, filters, aggregators, postAggregators,
-    threshold, metric, dimension, scopedVars, isAddHocFilter) {
+    threshold, metric, dimension, scopedVars) {
       var query = {
         "queryType": "topN",
         "dataSource": datasource,
@@ -347,7 +347,7 @@ function (angular, _, dateMath, moment) {
         "intervals": intervals
       };
 
-      query.filter = isAddHocFilter ? buildFilterTree(filters, scopedVars) : filters;
+      query.filter = buildFilterTree(filters, scopedVars);
 
       return this._druidQuery(query);
     };
