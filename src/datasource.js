@@ -24,10 +24,12 @@ function (angular, _, dateMath, moment) {
 
   /** @ngInject */
   function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv) {
+
     this.type = 'druid-datasource';
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
     this.basicAuth = instanceSettings.basicAuth;
+    this.adhocFilterDS = instanceSettings.jsonData.adhocFilterDS;
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
     this.periodGranularity = instanceSettings.jsonData.periodGranularity;
@@ -149,7 +151,7 @@ function (angular, _, dateMath, moment) {
       console.log(options);
 
       var promises = options.targets.map(function (target) {
-        if (target.hide===true || _.isEmpty(target.druidDS) || (_.isEmpty(target.aggregators) && target.queryType !== "select")) {
+        if (target.hide===true || _.isEmpty(target.druidDS) || (_.isEmpty(target.aggregators) && target.queryType !== "scan")) {
           console.log("target.hide: " + target.hide + ", target.druidDS: " + target.druidDS + ", target.aggregators: " + target.aggregators);
           var d = $q.defer();
           d.resolve([]);
@@ -216,13 +218,10 @@ function (angular, _, dateMath, moment) {
       var metricNames = getMetricNames(aggregators, postAggregators);
       var intervals = getQueryIntervals(from, to);
       var promise = null;
-
-      var selectMetrics = target.selectMetrics;
       var selectDimensions = target.selectDimensions;
-      var selectThreshold = target.selectThreshold;
-      if(!selectThreshold) {
-        selectThreshold = 5;
-      }
+      
+      var scanColumns = target.scanColumns;
+
 
         var postAggs = [];
         if (postAggregators && postAggregators.length) {
@@ -242,12 +241,13 @@ function (angular, _, dateMath, moment) {
         var threshold = target.limit;
         var metric = target.druidMetric;
         var dimension = templateSrv.replace(target.dimension);
+        var isTopNQueryForVar = target.isTopNQueryForVar
 
         if (dimension && dimension.indexOf("{") == 0) {
             dimension = JSON.parse(dimension);
         }
 
-        promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggs, threshold, metric, dimension, scopedVars)
+        promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggs, threshold, metric, dimension, scopedVars, isTopNQueryForVar)
           .then(function(response) {
             return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
           });
@@ -265,10 +265,10 @@ function (angular, _, dateMath, moment) {
             return convertGroupByData(response.data, groupBy, metricNames);
           });
       }
-      else if (target.queryType === 'select') {
-        promise = this._selectQuery(datasource, intervals, granularity, selectDimensions, selectMetrics, filters, selectThreshold, scopedVars);
-        return promise.then(function(response) {
-          return convertSelectData(response.data);
+      else if(target.queryType === 'scan'){
+        promise = this._scanQuery(datasource, intervals, scanColumns, filters, scopedVars);
+        return promise.then(function(response){
+            return convertScanData(response.data);
         });
       }
       else {
@@ -304,19 +304,17 @@ function (angular, _, dateMath, moment) {
       });
     };
 
-    this._selectQuery = function (datasource, intervals, granularity, dimension, metric, filters, selectThreshold, scopedVars) {
+    this._scanQuery = function (datasource, intervals, columns, filters, scopedVars){
       var query = {
-        "queryType": "select",
+        "queryType": "scan",
         "dataSource": datasource,
-        "granularity": granularity,
-        "pagingSpec": {"pagingIdentifiers": {}, "threshold": selectThreshold},
-        "dimensions": dimension,
-        "metrics": metric,
+        "legacy": true,
+        "resultFormat": "compactedList",
+        "columns": columns,
         "intervals": intervals
-      };
+      }
 
       query.filter = buildFilterTree(filters, scopedVars);
-
       return this._druidQuery(query);
     };
 
@@ -336,7 +334,7 @@ function (angular, _, dateMath, moment) {
     };
 
     this._topNQuery = function (datasource, intervals, granularity, filters, aggregators, postAggregators,
-    threshold, metric, dimension, scopedVars) {
+    threshold, metric, dimension, scopedVars, isTopNQueryForVar) {
       var query = {
         "queryType": "topN",
         "dataSource": datasource,
@@ -350,7 +348,7 @@ function (angular, _, dateMath, moment) {
         "intervals": intervals
       };
 
-      query.filter = buildFilterTree(filters, scopedVars);
+      query.filter = isTopNQueryForVar ? null : buildFilterTree(filters, scopedVars);
 
       return this._druidQuery(query);
     };
@@ -384,7 +382,10 @@ function (angular, _, dateMath, moment) {
       return backendSrv.datasourceRequest(options);
     };
 
-      
+      /** Variable query action.
+       *  It is invoked by /public/app/features/templating/query_variable.getOptions() lie in grafana server endpoint.
+       *  For more details refer to https://grafana.com/docs/grafana/latest/packages_api/data/datasourceapi/#metricfindquery-method
+       */          
       this.metricFindQuery = function(query) {
         var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
         var from = dateToMoment(range.from, false);
@@ -412,28 +413,9 @@ function (angular, _, dateMath, moment) {
                 return metrics;
             });
         } else {
-            var dimension = params[1];
-            var metric = "count";
-            var target = {
-                "queryType": "topN",
-                "druidDS": params[0],
-                "dimension": dimension,
-                "druidMetric": metric,
-                "aggregators": [{"type": "count", "name": metric}],
-                "intervals": [intervals],
-                "limit": 250
-            };
-            var promise = this._doQuery(from, to, 'all', target);
-            return promise.then(results => {
-                var l = _.map(results, (e) => {
-                    return {"text": e.target};
-                });
-                l.unshift({"text": "-"});
-                return l;
-            });
-        }
+        return this._topNQueryForVar(params[0], params[1]);
+      }
     }
-      
       
     function getLimitSpec(limitNum, orderBy) {
       return {
@@ -710,27 +692,25 @@ function (angular, _, dateMath, moment) {
       });
     }
 
-    function convertSelectData(data){
-      var resultList = _.map(data, "result");
-      var eventsList = _.map(resultList, "events");
-      var eventList = _.flatten(eventsList);
-      var result = {};
-      for(var i = 0; i < eventList.length; i++){
-        var event = eventList[i].event;
-        var timestamp = event.timestamp;
-        if(_.isEmpty(timestamp)) {
-          continue;
-        }
-        for(var key in event) {
-          if(key !== "timestamp") {
-            if(!result[key]){
-              result[key] = {"target":key, "datapoints":[]};
-            }
-            result[key].datapoints.push([event[key], timestamp]);
-          }
-        }
+    function convertScanData(data){
+      var results = [];
+      for(var i = 0; i < data.length; i++){
+        results[i] = {"columns": [], "rows": [], "type": "table"};
+    
+        var columns = data[i].columns.map( columnName => {return {"text": columnName}});
+        columns.splice(0, 1, {
+            "text": "Time",
+            "type": "time",
+            "sort": true,
+            "desc": true
+          });
+    
+        results[i].columns =columns;
+    
+        results[i].rows = data[i].events;
       }
-      return _.values(result);
+
+      return results;
     }
 
     function dateToMoment(date, roundUp) {
@@ -794,7 +774,60 @@ function (angular, _, dateMath, moment) {
     
         return filters;
       }
-      
+
+    /** Get tag keys for adhoc filters. 
+     *  It is invoked by /public/app/features/dashboard/components/AdHocFilters/AdHocFiltersCtr.getOptions() lie in grafana server endpoint.
+     *  For more details refer to https://grafana.com/docs/grafana/latest/packages_api/data/datasourceapi/#gettagkeys-method 
+     *  Add by xuzh1 on 2020/08/14   
+     */
+    this.getTagKeys = function(){
+      return this.getDimensionsAndMetrics(this.adhocFilterDS).then(result => {
+        var fields = [].concat(result.metrics).concat(result.dimensions);
+        return _.map(fields, fieldName => {return {"text": fieldName}});
+      });
+    }
+
+
+    /** Get tag values for adhoc filters. 
+     *  It is invoked by /public/app/features/dashboard/components/AdHocFilters/AdHocFiltersCtr.getOptions() lie in grafana server endpoint.
+     *  For more details refer to https://grafana.com/docs/grafana/latest/packages_api/data/datasourceapi/#gettagvalues-method
+     *  Add by xuzh1 on 2020/08/14   
+     */
+    this.getTagValues = function(options){
+      return this._topNQueryForVar(this.adhocFilterDS, options.key);
+
+    }           
+
+    /** It is used to get tag values for adhoc filters and variables.
+     *  Add by xuzh1 on 2020/08/14   
+     */    
+    this._topNQueryForVar = function(datasource, dimension){
+      var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
+      var from = moment(Number(range.from));
+      var to = moment(Number(range.to));
+
+      var metric = "count";
+      var target = {
+          "queryType": "topN",
+          "druidDS": datasource,
+          "dimension": dimension,
+          "druidMetric": metric,
+          "aggregators": [{"type": "count", "name": metric}],
+          "limit": 250,
+          "isTopNQueryForVar": true
+      };
+
+      var promise = this._doQuery(from, to, 'all', target);
+      return promise.then(results => {
+          var l = _.map(results, (e) => {
+              return {"text": e.target};
+          });
+          l.unshift({"text": "-"});
+          return l;
+      });
+    }
+
+
    //changes druid end
   }
   return {

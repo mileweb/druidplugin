@@ -12,8 +12,10 @@ export class DruidQueryCtrl extends QueryCtrl {
   addPostAggregatorMode: boolean;
   addDimensionsMode: boolean;
   addMetricsMode: boolean;
+  addScanColumnsMode: boolean;
   listDataSources: any;
   getDimensionsAndMetrics: any;
+  getScanColumns: any;
   getMetrics: any;
   getMetricsPlusDimensions: any;
   getDimensions: any;
@@ -31,7 +33,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       "timeseries": _.noop.bind(this),
       "groupBy": this.validateGroupByQuery.bind(this),
       "topN": this.validateTopNQuery.bind(this),
-      "select": this.validateSelectQuery.bind(this)
+      "scan": this.validateScanQuery.bind(this)
     };
     filterValidators = {
       "selector": this.validateSelectorFilter.bind(this),
@@ -69,6 +71,7 @@ export class DruidQueryCtrl extends QueryCtrl {
     defaultCustomGranularity = 'five_minute';
     defaultSelectDimension = "";
     defaultSelectMetric = "";
+    defaultScanColumn = "";
     defaultLimit = 10;
 
 
@@ -95,6 +98,11 @@ export class DruidQueryCtrl extends QueryCtrl {
         this.target.currentSelect = {};
         this.clearCurrentSelectDimension();
         this.clearCurrentSelectMetric();
+      }
+
+      if(!this.target.currentScan){
+        this.target.currentScan = {};
+        this.clearCurrentScanColumn();
       }
 
       if (!this.target.currentAggregator) {
@@ -145,6 +153,17 @@ export class DruidQueryCtrl extends QueryCtrl {
       this.datasource.getDimensionsAndMetrics(this.target.druidDS)
         .then(callback);
     };
+
+    this.getScanColumns = (query, callback) => {
+      console.log("getScanColumns.query: " + query);
+      return this.datasource.getDimensionsAndMetrics(this.target.druidDS)
+      .then(function (dimsAndMetrics) {
+      callback([].concat(dimsAndMetrics.metrics).concat(dimsAndMetrics.dimensions));
+      });
+    };
+
+
+
 
     this.getFilterValues = (query, callback) => {
       let dimension = this.target.currentFilter.dimension;
@@ -276,6 +295,30 @@ export class DruidQueryCtrl extends QueryCtrl {
     clearCurrentSelectMetric() {
       this.target.currentSelect.metric = this.defaultSelectMetric;
       this.addMetricsMode = false;
+      this.targetBlur();
+    }
+
+    addScanColumn(){
+      if(!this.addScanColumnsMode){
+        this.addScanColumnsMode = true;
+        return;
+      }
+      if(!this.target.scanColumns){
+        this.target.scanColumns = [];
+      }
+      this.target.scanColumns.push(this.target.currentScan.column);
+      this.clearCurrentScanColumn();
+      this.targetBlur();
+    }
+
+    removeScanColumn(index){
+      this.target.scanColumns.splice(index, 1);
+      this.targetBlur();
+    }
+
+    clearCurrentScanColumn(){
+      this.target.currentScan.column = this.defaultScanColumn;
+      this.addScanColumnsMode = false;
       this.targetBlur();
     }
 
@@ -447,12 +490,9 @@ export class DruidQueryCtrl extends QueryCtrl {
       return true;
     }
 
-    validateSelectQuery(target, errs) {
-      if (!target.selectThreshold && target.selectThreshold <= 0) {
-        errs.selectThreshold = "Must specify a positive number";
-        return false;
-      }
-      return true;
+
+    validateScanQuery(target, errs){
+      return true
     }
 
     validateSelectorFilter(target) {
@@ -685,7 +725,7 @@ export class DruidQueryCtrl extends QueryCtrl {
         }
       }
 
-      if (_.isEmpty(this.target.aggregators) && !_.isEqual(this.target.queryType, "select")) {
+      if (_.isEmpty(this.target.aggregators) && !_.isEqual(this.target.queryType, "scan")) {
         errs.aggregators = "You must supply at least one aggregator";
       }
 
