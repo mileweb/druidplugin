@@ -23,7 +23,7 @@ function (angular, _, dateMath, moment) {
   'use strict';
 
   /** @ngInject */
-  function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv) {
+  function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv, timeSrv) {
 
     this.type = 'druid-datasource';
     this.url = instanceSettings.url;
@@ -805,6 +805,10 @@ function (angular, _, dateMath, moment) {
       var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
       var from = moment(Number(range.from));
       var to = moment(Number(range.to));
+
+      var range2 = timeSrv.timeRange();
+      var from2 = range2.from.valueOf().toString();
+      var to2 = range2.to.valueOf().toString();
 
       var metric = "count";
       var target = {
