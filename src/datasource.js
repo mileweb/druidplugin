@@ -803,8 +803,8 @@ function (angular, _, dateMath, moment) {
      */    
     this._topNQueryForVar = function(datasource, dimension){
       var range1 = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
-      var from1 = moment(Number(range.from));
-      var to1 = moment(Number(range.to));
+      var from1 = moment(Number(range1.from));
+      var to1 = moment(Number(range1.to));
 
       var range = timeSrv.timeRange();
       var from = moment(Number(range.from.valueOf().toString()));
