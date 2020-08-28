@@ -4,4 +4,4 @@ npm-debug.log
 /.project
 dist/
 vendor/
-src/tmp/
+src/tmp
