@@ -371,6 +371,7 @@ function (angular, _, dateMath, moment) {
       return this._druidQuery(query);
     };
 
+    /** 
     this._druidQuery = function (query) {
       var options = {
         method: 'POST',
@@ -381,11 +382,25 @@ function (angular, _, dateMath, moment) {
       console.log(options);
       return backendSrv.datasourceRequest(options);
     };
+    */
+
+   this._druidQuery = function (query, path = "/druid/v2/") {
+    var options = {
+      method: 'POST',
+      url: this.url + path,
+      data: query
+    };
+    console.log("Make http request");
+    console.log(options);
+    return backendSrv.datasourceRequest(options);
+   };
+
+
 
       /** Variable query action.
        *  It is invoked by /public/app/features/templating/query_variable.getOptions() lie in grafana server endpoint.
        *  For more details refer to https://grafana.com/docs/grafana/latest/packages_api/data/datasourceapi/#metricfindquery-method
-       */          
+                 
       this.metricFindQuery = function(query) {
         var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
         var from = dateToMoment(range.from, false);
@@ -416,7 +431,44 @@ function (angular, _, dateMath, moment) {
         return this._topNQueryForVar(params[0], params[1]);
       }
     }
-      
+  */
+
+ this.metricFindQuery = function(query) {
+    let druidSqlQuery = {
+        query: query,
+        context: {
+            "sqlTimeZone": this.periodGranularity
+        }
+    }
+
+    return new Promise((resolve, reject) => {
+        this._druidQuery(druidSqlQuery, "/druid/v2/sql")
+            .then(
+                result => {
+                    let variableData =
+                        result.data
+                            .map(row => {
+                                let vals = []
+                                for (let property in row) {
+                                    vals.push({"text": row[property]})
+                                }
+                                return vals;
+                            })
+                            .reduce((a, b) => {
+                                return a.concat(b)
+                            })
+
+                    resolve(variableData)
+                },
+                error => {
+                    console.log(error.data.errorMessage)
+                    reject(new Error(error.data.errorMessage))
+                }
+            )
+    })
+
+  }  
+  
     function getLimitSpec(limitNum, orderBy) {
       return {
         "type": "default",
