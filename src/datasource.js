@@ -445,8 +445,10 @@ function (angular, _, dateMath, moment) {
         this._druidQuery(druidSqlQuery, "/druid/v2/sql")
             .then(
                 result => {
+                    let resultData = [];
+                    resultData = result.data;
                     let variableData =
-                        result.data
+                        resultData
                             .map(row => {
                                 let vals = []
                                 for (let property in row) {
