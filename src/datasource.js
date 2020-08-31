@@ -97,7 +97,8 @@ function (angular, _, dateMath, moment) {
       var regex = new RegExp(this.dsRegex, 'ig' ); 
       return this._get('/druid/v2/datasources').then(function (response) {
         // var datasources = response.data;
-        return _.filter(response.data, datasource => {return regex.test(datasource)});
+        var results =  _.filter(response.data, datasource => {return regex.test(datasource)});
+        return results;
       });
 
     };
