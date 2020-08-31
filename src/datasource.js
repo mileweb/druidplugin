@@ -30,6 +30,7 @@ function (angular, _, dateMath, moment) {
     this.name = instanceSettings.name;
     this.basicAuth = instanceSettings.basicAuth;
     this.adhocFilterDS = instanceSettings.jsonData.adhocFilterDS;
+    this.dsRegex = instanceSettings.jsonData.dsRegex;
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
     this.periodGranularity = instanceSettings.jsonData.periodGranularity;
@@ -93,9 +94,13 @@ function (angular, _, dateMath, moment) {
 
     //Get list of available datasources
     this.getDataSources = function() {
-      return this._get('/druid/v2/datasources').then(function (response) {
+      var datasources = this._get('/druid/v2/datasources').then(function (response) {
         return response.data;
       });
+
+      //add
+      var regex = new RegExp(dsRegex, 'ig' ) 
+      return _.filter(datasources, datasource => {return regex.test(datasource)});
     };
 
     this.getDimensionsAndMetrics = function (datasource) {
