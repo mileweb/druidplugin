@@ -94,9 +94,9 @@ function (angular, _, dateMath, moment) {
 
     //Get list of available datasources
     this.getDataSources = function() {
+      var regex = new RegExp(this.dsRegex, 'ig' ); 
       return this._get('/druid/v2/datasources').then(function (response) {
         // var datasources = response.data;
-        var regex = new RegExp(this.dsRegex, 'ig' ); 
         return _.filter(response.data, datasource => {return regex.test(datasource)});
       });
 
