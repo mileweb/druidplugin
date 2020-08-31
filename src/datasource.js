@@ -255,7 +255,8 @@ function (angular, _, dateMath, moment) {
 
         promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggs, threshold, metric, dimension, scopedVars, isTopNQueryForVar)
           .then(function(response) {
-            return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
+            var seriesList = convertTopNData(response.data, dimension['outputName'] || dimension, metric);
+            return seriesList;
           });
       }
       else if (target.queryType === 'groupBy') {
