@@ -94,13 +94,12 @@ function (angular, _, dateMath, moment) {
 
     //Get list of available datasources
     this.getDataSources = function() {
-      var datasources = this._get('/druid/v2/datasources').then(function (response) {
-        return response.data;
+      return this._get('/druid/v2/datasources').then(function (response) {
+        // var datasources = response.data;
+        var regex = new RegExp(this.dsRegex, 'ig' ); 
+        return _.filter(response.data, datasource => {return regex.test(datasource)});
       });
 
-      //add
-      var regex = new RegExp(this.dsRegex, 'ig' ) 
-      return _.filter(datasources, datasource => {return regex.test(datasource)});
     };
 
     this.getDimensionsAndMetrics = function (datasource) {
