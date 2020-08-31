@@ -99,7 +99,7 @@ function (angular, _, dateMath, moment) {
       });
 
       //add
-      var regex = new RegExp(dsRegex, 'ig' ) 
+      var regex = new RegExp(this.dsRegex, 'ig' ) 
       return _.filter(datasources, datasource => {return regex.test(datasource)});
     };
 
