@@ -23,13 +23,14 @@ function (angular, _, dateMath, moment) {
   'use strict';
 
   /** @ngInject */
-  function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv) {
+  function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv, timeSrv) {
 
     this.type = 'druid-datasource';
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
     this.basicAuth = instanceSettings.basicAuth;
     this.adhocFilterDS = instanceSettings.jsonData.adhocFilterDS;
+    this.dsRegex = instanceSettings.jsonData.dsRegex;
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
     this.periodGranularity = instanceSettings.jsonData.periodGranularity;
@@ -93,9 +94,14 @@ function (angular, _, dateMath, moment) {
 
     //Get list of available datasources
     this.getDataSources = function() {
+      // var regex = new RegExp(this.dsRegex, 'ig' ); 
+      var regex = eval(this.dsRegex); 
       return this._get('/druid/v2/datasources').then(function (response) {
-        return response.data;
+        // var datasources = response.data;
+        var results =  regex ? _.filter(response.data, datasource => {return regex.test(datasource)}) : response.data;
+        return results;
       });
+
     };
 
     this.getDimensionsAndMetrics = function (datasource) {
@@ -249,7 +255,8 @@ function (angular, _, dateMath, moment) {
 
         promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggs, threshold, metric, dimension, scopedVars, isTopNQueryForVar)
           .then(function(response) {
-            return convertTopNData(response.data, dimension['outputName'] || dimension, metric);
+            var seriesList = convertTopNData(response.data, dimension['outputName'] || dimension, metric);
+            return seriesList;
           });
       }
       else if (target.queryType === 'groupBy') {
@@ -802,9 +809,9 @@ function (angular, _, dateMath, moment) {
      *  Add by xuzh1 on 2020/08/14   
      */    
     this._topNQueryForVar = function(datasource, dimension){
-      var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
-      var from = moment(Number(range.from));
-      var to = moment(Number(range.to));
+      var range = timeSrv.timeRange();
+      var from = moment(Number(range.from.valueOf().toString()));
+      var to = moment(Number(range.to.valueOf().toString()));
 
       var metric = "count";
       var target = {
