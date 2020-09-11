@@ -273,7 +273,7 @@ function (angular, _, dateMath, moment) {
           });
       }
       else if(target.queryType === 'scan'){
-        promise = this._scanQuery(datasource, intervals, scanColumns, filters, scopedVars);
+        promise = this._scanQuery(datasource, intervals, scanColumns, target.limit, filters, scopedVars);
         return promise.then(function(response){
             return convertScanData(response.data);
         });
@@ -311,13 +311,14 @@ function (angular, _, dateMath, moment) {
       });
     };
 
-    this._scanQuery = function (datasource, intervals, columns, filters, scopedVars){
+    this._scanQuery = function (datasource, intervals, columns, limit, filters, scopedVars){
       var query = {
         "queryType": "scan",
         "dataSource": datasource,
         "legacy": true,
         "resultFormat": "compactedList",
         "columns": columns,
+        "limit": limit,
         "intervals": intervals
       }
 

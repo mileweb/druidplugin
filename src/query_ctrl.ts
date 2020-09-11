@@ -498,6 +498,9 @@ export class DruidQueryCtrl extends QueryCtrl {
 
 
     validateScanQuery(target, errs){
+      if (!this.validateLimit(target, errs)) {
+        return false;
+      }     
       return true
     }
 
