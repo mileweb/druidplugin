@@ -72,7 +72,7 @@ export class DruidQueryCtrl extends QueryCtrl {
     defaultSelectDimension = "";
     defaultSelectMetric = "";
     defaultScanColumn = "";
-    defaultLimit = 10;
+    defaultLimit = 1000;
 
 
   /** @ngInject **/

@@ -312,6 +312,12 @@ function (angular, _, dateMath, moment) {
     };
 
     this._scanQuery = function (datasource, intervals, columns, limit, filters, scopedVars){
+      if(isNaN(limit)){
+        limit = 1000;
+      }else if(limit > 2000){
+        limit = 2000;
+      }
+
       var query = {
         "queryType": "scan",
         "dataSource": datasource,
