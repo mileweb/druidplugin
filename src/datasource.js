@@ -600,7 +600,7 @@ function (angular, _, dateMath, moment) {
 
       }else{
 
-        megerData = md.map(function(item) {
+        mergedData = md.map(function(item) {
           var zipObjects = [];
           var timestamp = formatTimestamp(item.timestamp);
           metrics.map(function(metric){
