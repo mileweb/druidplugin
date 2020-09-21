@@ -608,7 +608,7 @@ function (angular, _, dateMath, moment) {
             var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
             zipObjects.push(_.zipObject(keys, vals));
           })
-          return _.flatten(zipObjects);
+          return _.flatten(zipObjects).value();
         })
         .reduce(function (prev, curr) {
 
@@ -623,8 +623,8 @@ function (angular, _, dateMath, moment) {
 
       }
 
-      return _.flatten(mergedData)
-        .map(function (vals, key) {
+
+      return _.map(mergedData, function (vals, key) {
           return {
             target: key,
             datapoints: vals
