@@ -622,13 +622,24 @@ function (angular, _, dateMath, moment) {
         }, {});
 
       }
-
+/** 
       return _.map(mergedData, function (vals, key) {
         return {
           target: key,
           datapoints: vals
         };
       });
+*/
+
+      return mergedData.forEach(function(mergeData){
+        return _.map(mergeData, function (vals, key) {
+          return {
+            target: key,
+            datapoints: vals
+          };
+        });
+      });
+
     }
 
     function convertGroupByData(md, groupBy, metrics) {
