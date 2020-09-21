@@ -584,7 +584,7 @@ function (angular, _, dateMath, moment) {
         mergedData = md.map(function (item) {
           var timestamp = formatTimestamp(item.timestamp);
           var keys = _.map(item.result, dimension);
-          var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
+          var vals = _.map(item.result, metrics[0]).map(function (val) { return [val, timestamp];});
           return _.zipObject(keys, vals);
         })
         .reduce(function (prev, curr) {
