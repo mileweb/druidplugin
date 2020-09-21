@@ -578,11 +578,11 @@ function (angular, _, dateMath, moment) {
 
       //Re-index the results by dimension value instead of time interval
       var mergedData;
-      var timestamp = formatTimestamp(item.timestamp);
+      
       if(metrics.length < 2){
 
         mergedData = md.map(function (item) {
-          
+          var timestamp = formatTimestamp(item.timestamp);
           var keys = _.map(item.result, dimension);
           var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
           return _.zipObject(keys, vals);
@@ -602,6 +602,7 @@ function (angular, _, dateMath, moment) {
 
         megerData = md.map(function(item) {
           var zipObjects = [];
+          var timestamp = formatTimestamp(item.timestamp);
           metrics.map(function(metric){
             var keys = _.map(item.result, dimension).map(function(key) {return key + ":" + metric});
             var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
