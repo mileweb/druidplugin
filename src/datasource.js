@@ -255,7 +255,8 @@ function (angular, _, dateMath, moment) {
 
         promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggs, threshold, metric, dimension, scopedVars, isTopNQueryForVar)
           .then(function(response) {
-            var seriesList = convertTopNData(response.data, dimension['outputName'] || dimension, metric);
+            // var seriesList = convertTopNData(response.data, dimension['outputName'] || dimension, metric);
+            var seriesList = convertTopNData(response.data, dimension['outputName'] || dimension, metricNames);
             return seriesList;
           });
       }
@@ -553,101 +554,74 @@ function (angular, _, dateMath, moment) {
       .join("-");
     }
 
-    function convertTopNData(md, dimension, metric) {
-      /*
-        Druid topN results look like this:
-        [
-          {
-            "timestamp": "ts1",
-            "result": [
-              {"<dim>": d1, "<metric>": mv1},
-              {"<dim>": d2, "<metric>": mv2}
-            ]
-          },
-          {
-            "timestamp": "ts2",
-            "result": [
-              {"<dim>": d1, "<metric>": mv3},
-              {"<dim>": d2, "<metric>": mv4}
-            ]
-          },
-          ...
-        ]
-      */
+    function convertTopNData(md, dimension, metrics) {
 
-      /*
-        First, we need make sure that the result for each
-        timestamp contains entries for all distinct dimension values
-        in the entire list of results.
-
-        Otherwise, if we do a stacked bar chart, Grafana doesn't sum
-        the metrics correctly.
-      */
-
-      //Get the list of all distinct dimension values for the entire result set
       var dVals = md.reduce(function (dValsSoFar, tsItem) {
         var dValsForTs = _.map(tsItem.result, dimension);
         return _.union(dValsSoFar, dValsForTs);
       }, {});
 
-      //Add null for the metric for any missing dimension values per timestamp result
       md.forEach(function (tsItem) {
         var dValsPresent = _.map(tsItem.result, dimension);
         var dValsMissing = _.difference(dVals, dValsPresent);
         dValsMissing.forEach(function (dVal) {
           var nullPoint = {};
           nullPoint[dimension] = dVal;
-          nullPoint[metric] = null;
+          metrics.forEach(function(metric){
+            nullPoint[metric] = null;
+          });
+          // nullPoint[metric] = null;
           tsItem.result.push(nullPoint);
         });
         return tsItem;
       });
 
       //Re-index the results by dimension value instead of time interval
-      var mergedData = md.map(function (item) {
-        /*
-          This first map() transforms this into a list of objects
-          where the keys are dimension values
-          and the values are [metricValue, unixTime] so that we get this:
-            [
-              {
-                "d1": [mv1, ts1],
-                "d2": [mv2, ts1]
-              },
-              {
-                "d1": [mv3, ts2],
-                "d2": [mv4, ts2]
-              },
-              ...
-            ]
-        */
-        var timestamp = formatTimestamp(item.timestamp);
-        var keys = _.map(item.result, dimension);
-        var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
-        return _.zipObject(keys, vals);
-      })
-      .reduce(function (prev, curr) {
-        /*
-          Reduce() collapses all of the mapped objects into a single
-          object.  The keys are dimension values
-          and the values are arrays of all the values for the same key.
-          The _.assign() function merges objects together and it's callback
-          gets invoked for every key,value pair in the source (2nd argument).
-          Since our initial value for reduce() is an empty object,
-          the _.assign() callback will get called for every new val
-          that we add to the final object.
-        */
-        return _.assignWith(prev, curr, function (pVal, cVal) {
-          if (pVal) {
-            pVal.push(cVal);
-            return pVal;
-          }
-          return [cVal];
-        });
-      }, {});
+      var mergedData;
+      var timestamp = formatTimestamp(item.timestamp);
+      if(metrics.length < 2){
 
-      //Convert object keyed by dimension values into an array
-      //of objects {target: <dimVal>, datapoints: <metric time series>}
+        mergedData = md.map(function (item) {
+          
+          var keys = _.map(item.result, dimension);
+          var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
+          return _.zipObject(keys, vals);
+        })
+        .reduce(function (prev, curr) {
+
+          return _.assignWith(prev, curr, function (pVal, cVal) {
+            if (pVal) {
+              pVal.push(cVal);
+              return pVal;
+            }
+            return [cVal];
+          });
+        }, {});
+
+      }else{
+
+        megerData = md.map(function(item) {
+          var zipObjects = [];
+          metrics.map(function(metric){
+            var keys = _.map(item.result, dimension).map(function(key) {return key + ":" + metric});
+            var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
+            zipObjects.push(_.zipObject(keys, vals));
+          })
+          return _.flatten(zipObjects);
+        })
+        .reduce(function (prev, curr) {
+
+          return _.assignWith(prev, curr, function (pVal, cVal) {
+            if (pVal) {
+              pVal.push(cVal);
+              return pVal;
+            }
+            return [cVal];
+          });
+        }, {});
+
+      }
+
       return _.map(mergedData, function (vals, key) {
         return {
           target: key,
