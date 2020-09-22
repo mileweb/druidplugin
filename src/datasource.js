@@ -577,7 +577,7 @@ function (angular, _, dateMath, moment) {
       });
 
       //Re-index the results by dimension value instead of time interval
-      var mergedData = [];
+      var mergedData = {};
       
       if(metrics.length < 2){
 
@@ -621,20 +621,13 @@ function (angular, _, dateMath, moment) {
             });
           }, {});
 
-          mergedData.push(partMergedData);
+          // mergedData.push(partMergedData);
+
+          _.assign(mergedData, partMergedData);
 
         });
 
-        mergedData.reduce(function (prev, curr) {
-  
-          return _.assignWith(prev, curr, function (pVal, cVal) {
-            if (pVal) {
-              pVal.push(cVal);
-              return pVal;
-            }
-            return [cVal];
-          });
-        }, {});
+
 
 
 
