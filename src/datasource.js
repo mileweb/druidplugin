@@ -614,9 +614,6 @@ function (angular, _, dateMath, moment) {
             datapoints: vals
           };
         });
-
-
-
     }
 
     function convertGroupByData(md, groupBy, metrics) {
