@@ -577,7 +577,7 @@ function (angular, _, dateMath, moment) {
       });
 
       //Re-index the results by dimension value instead of time interval
-      var mergedData;
+      var mergedData = [];
       
       if(metrics.length < 2){
 
