@@ -597,7 +597,9 @@ function (angular, _, dateMath, moment) {
         dValsMissing.forEach(function (dVal) {
           var nullPoint = {};
           nullPoint[dimension] = dVal;
-          nullPoint[metric] = null;
+          metrics.forEach(function(metric){
+            nullPoint[metric] = null;
+          });
           tsItem.result.push(nullPoint);
         });
         return tsItem;
