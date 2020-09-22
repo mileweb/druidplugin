@@ -553,7 +553,7 @@ function (angular, _, dateMath, moment) {
       .join("-");
     }
 
-    function convertTopNData(md, dimension, metric) {
+    function convertTopNData(md, dimension, metrics) {
       /*
         Druid topN results look like this:
         [
