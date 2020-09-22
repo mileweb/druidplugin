@@ -625,6 +625,19 @@ function (angular, _, dateMath, moment) {
 
         });
 
+        mergedData.reduce(function (prev, curr) {
+  
+          return _.assignWith(prev, curr, function (pVal, cVal) {
+            if (pVal) {
+              pVal.push(cVal);
+              return pVal;
+            }
+            return [cVal];
+          });
+        }, {});
+
+
+
 /**         
         mergedData = md.map(function(item) {
           var zipObjects = [];
