@@ -578,13 +578,19 @@ function (angular, _, dateMath, moment) {
 
       //Re-index the results by dimension value instead of time interval
       var mergedData = {};
-      
-      if(metrics.length < 2){
+      var flag = metrics.length;
 
-        mergedData = md.map(function (item) {
+      metrics.forEach(function(metric){
+
+        var partMergedData = md.map(function (item) {
           var timestamp = formatTimestamp(item.timestamp);
           var keys = _.map(item.result, dimension);
-          var vals = _.map(item.result, metrics[0]).map(function (val) { return [val, timestamp];});
+
+          if(flag >= 2){
+            keys = keys.map(function(key) {return key + ":" + metric});
+          }
+          
+          var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
           return _.zipObject(keys, vals);
         })
         .reduce(function (prev, curr) {
@@ -598,63 +604,9 @@ function (angular, _, dateMath, moment) {
           });
         }, {});
 
-      }else{
+        _.assign(mergedData, partMergedData);
 
-
-
-        metrics.forEach(function(metric){
-
-          var partMergedData = md.map(function (item) {
-            var timestamp = formatTimestamp(item.timestamp);
-            var keys = _.map(item.result, dimension).map(function(key) {return key + ":" + metric});
-            var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
-            return _.zipObject(keys, vals);
-          })
-          .reduce(function (prev, curr) {
-  
-            return _.assignWith(prev, curr, function (pVal, cVal) {
-              if (pVal) {
-                pVal.push(cVal);
-                return pVal;
-              }
-              return [cVal];
-            });
-          }, {});
-
-          // mergedData.push(partMergedData);
-
-          _.assign(mergedData, partMergedData);
-
-        });
-
-
-
-
-
-/**         
-        mergedData = md.map(function(item) {
-          var zipObjects = [];
-          var timestamp = formatTimestamp(item.timestamp);
-          metrics.map(function(metric){
-            var keys = _.map(item.result, dimension).map(function(key) {return key + ":" + metric});
-            var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
-            zipObjects.push(_.zipObject(keys, vals));
-          })
-          return _.flatten(zipObjects).value();
-        })
-        .reduce(function (prev, curr) {
-
-          return _.assignWith(prev, curr, function (pVal, cVal) {
-            if (pVal) {
-              pVal.push(cVal);
-              return pVal;
-            }
-            return [cVal];
-          });
-        }, {});
-*/
-      }
-
+      });
 
       return _.map(mergedData, function (vals, key) {
           return {
