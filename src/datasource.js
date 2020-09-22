@@ -600,6 +600,32 @@ function (angular, _, dateMath, moment) {
 
       }else{
 
+
+
+        metrics.forEach(function(metric){
+
+          var partMergedData = md.map(function (item) {
+            var timestamp = formatTimestamp(item.timestamp);
+            var keys = _.map(item.result, dimension).map(function(key) {return key + ":" + metric});
+            var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
+            return _.zipObject(keys, vals);
+          })
+          .reduce(function (prev, curr) {
+  
+            return _.assignWith(prev, curr, function (pVal, cVal) {
+              if (pVal) {
+                pVal.push(cVal);
+                return pVal;
+              }
+              return [cVal];
+            });
+          }, {});
+
+          mergedData.push(partMergedData);
+
+        });
+
+/**         
         mergedData = md.map(function(item) {
           var zipObjects = [];
           var timestamp = formatTimestamp(item.timestamp);
@@ -620,7 +646,7 @@ function (angular, _, dateMath, moment) {
             return [cVal];
           });
         }, {});
-
+*/
       }
 
 
