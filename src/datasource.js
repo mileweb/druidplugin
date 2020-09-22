@@ -255,7 +255,7 @@ function (angular, _, dateMath, moment) {
 
         promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggs, threshold, metric, dimension, scopedVars, isTopNQueryForVar)
           .then(function(response) {
-            var seriesList = convertTopNData(response.data, dimension['outputName'] || dimension, metric);
+            var seriesList = convertTopNData(response.data, dimension['outputName'] || dimension, metricNames);
             return seriesList;
           });
       }
@@ -560,15 +560,15 @@ function (angular, _, dateMath, moment) {
           {
             "timestamp": "ts1",
             "result": [
-              {"<dim>": d1, "<metric>": mv1},
-              {"<dim>": d2, "<metric>": mv2}
+              {"<dim>": d1, "<metric1>": mv1_1, "<metric2>": mv2_1, ···},
+              {"<dim>": d2, "<metric1>": mv1_2, "<metric2>": mv2_2, ···}
             ]
           },
           {
             "timestamp": "ts2",
             "result": [
-              {"<dim>": d1, "<metric>": mv3},
-              {"<dim>": d2, "<metric>": mv4}
+              {"<dim>": d1, "<metric1>": mv1_3, "<metric2>": mv2_3, ···},
+              {"<dim>": d2, "<metric1>": mv1_4, "<metric2>": mv2_4, ···}
             ]
           },
           ...
@@ -604,7 +604,12 @@ function (angular, _, dateMath, moment) {
       });
 
       //Re-index the results by dimension value instead of time interval
-      var mergedData = md.map(function (item) {
+      var mergedData = {};
+      var flag = metrics.length;
+
+      metrics.forEach(function(metric){
+
+        var partMergedData = md.map(function (item) {
         /*
           This first map() transforms this into a list of objects
           where the keys are dimension values
@@ -620,13 +625,18 @@ function (angular, _, dateMath, moment) {
               },
               ...
             ]
-        */
-        var timestamp = formatTimestamp(item.timestamp);
-        var keys = _.map(item.result, dimension);
-        var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
-        return _.zipObject(keys, vals);
-      })
-      .reduce(function (prev, curr) {
+        */          
+          var timestamp = formatTimestamp(item.timestamp);
+          var keys = _.map(item.result, dimension);
+
+          if(flag >= 2){
+            keys = keys.map(function(key) {return key + ":" + metric});
+          }
+          
+          var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
+          return _.zipObject(keys, vals);
+        })
+        .reduce(function (prev, curr) {
         /*
           Reduce() collapses all of the mapped objects into a single
           object.  The keys are dimension values
@@ -637,14 +647,18 @@ function (angular, _, dateMath, moment) {
           the _.assign() callback will get called for every new val
           that we add to the final object.
         */
-        return _.assignWith(prev, curr, function (pVal, cVal) {
-          if (pVal) {
-            pVal.push(cVal);
-            return pVal;
-          }
-          return [cVal];
-        });
-      }, {});
+          return _.assignWith(prev, curr, function (pVal, cVal) {
+            if (pVal) {
+              pVal.push(cVal);
+              return pVal;
+            }
+            return [cVal];
+          });
+        }, {});
+
+        _.assign(mergedData, partMergedData);
+
+      });
 
       //Convert object keyed by dimension values into an array
       //of objects {target: <dimVal>, datapoints: <metric time series>}
