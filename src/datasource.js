@@ -273,6 +273,7 @@ function (angular, _, dateMath, moment) {
           });
       }
       else if(target.queryType === 'scan'){
+        scanColumns.unshift("__time");
         promise = this._scanQuery(datasource, intervals, scanColumns, target.limit, filters, scopedVars);
         return promise.then(function(response){
             return convertScanData(response.data);
@@ -321,10 +322,10 @@ function (angular, _, dateMath, moment) {
       var query = {
         "queryType": "scan",
         "dataSource": datasource,
-        "legacy": true,
         "resultFormat": "compactedList",
         "columns": columns,
         "limit": limit,
+        "order": "descending",
         "intervals": intervals
       }
 
