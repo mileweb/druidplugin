@@ -398,7 +398,7 @@ export class DruidQueryCtrl extends QueryCtrl {
 
     clearCurrentPostAggregator() {
       // this.target.currentPostAggregator = _.clone(this.defaultPostAggregator);;
-      this.target.currentPostAggregator = {type: this.defaultPostAggregatorType, 'fn': '+'};
+      this.target.currentPostAggregator = {type: this.defaultPostAggregatorType};
       this.addPostAggregatorMode = false;
       this.targetBlur();
     }
@@ -648,9 +648,10 @@ export class DruidQueryCtrl extends QueryCtrl {
       if (!target.currentPostAggregator.fieldName) {
         return "Must provide an aggregator name for " + type + " post aggregator.";
       }else{
+        var tmpField = target.currentPostAggregator.field;
         target.currentPostAggregator.field = {
           "type": "fieldAccess",
-          "fieldName": target.currentPostAggregator.fieldName
+          "fieldName": tmpField
           }
       }
       //TODO - check that field is a valid aggregation (exists and of correct type)
