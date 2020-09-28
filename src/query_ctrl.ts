@@ -58,7 +58,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       "arithmetic": this.validateArithmeticPostAggregator.bind(this),
       "max": this.validateMaxPostAggregator.bind(this),
       "min": this.validateMinPostAggregator.bind(this),
-      "quantile": this.validateQuantilePostAggregator.bind(this),
+      "quantilesDoublesSketchToQuantile":_.partial(this.validateQuantilePostAggregator.bind(this), 'quantilesDoublesSketchToQuantile'),
       "javascript": this.validateJavascriptPostAggregator.bind(this)
     };
 
@@ -639,13 +639,15 @@ export class DruidQueryCtrl extends QueryCtrl {
       return null;
     }
 
-    validateQuantilePostAggregator(target) {
-      var err = this.validateSimplePostAggregator('quantile', target);
-      if (err) { return err; }
-      if (!target.currentPostAggregator.probability) {
-        return "Must provide a fraction for the quantile post aggregator.";
+    validateQuantilePostAggregator(type, target) {
+      if (!target.currentPostAggregator.name) {
+        return "Must provide an output name for " + type + " post aggregator.";
       }
-      return null;
+      if (!target.currentPostAggregator.field) {
+        return "Must provide an aggregator name for " + type + " post aggregator.";
+      }
+      //TODO - check that field is a valid aggregation (exists and of correct type)
+      return null;      
     }
 
     validateJavascriptPostAggregator(target) {
