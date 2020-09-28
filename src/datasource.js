@@ -80,7 +80,7 @@ function (angular, _, dateMath, moment) {
       "doubleSum": _.partialRight(replaceTemplateValues, ['fieldName']),
       "doubleMax": _.partialRight(replaceTemplateValues, ['fieldName']),
       "doubleMin": _.partialRight(replaceTemplateValues, ['fieldName']),
-      "approxHistogramFold": _.partialRight(replaceTemplateValues, ['fieldName']),
+      "quantilesDoublesSketch": _.partialRight(replaceTemplateValues, ['fieldName']),
       "hyperUnique": _.partialRight(replaceTemplateValues, ['fieldName']),
       "json": _.partialRight(replaceTemplateValues, ['value']),
       "thetaSketch": _.partialRight(replaceTemplateValues, ['fieldName'])
@@ -94,7 +94,7 @@ function (angular, _, dateMath, moment) {
 
     //Get list of available datasources
     this.getDataSources = function() {
-      // var regex = new RegExp(this.dsRegex, 'ig' ); 
+      // var regex = new RegExp(this.dsRegex, 'i' ); 
       var regex = eval(this.dsRegex); 
       return this._get('/druid/v2/datasources').then(function (response) {
         // var datasources = response.data;
@@ -524,7 +524,7 @@ function (angular, _, dateMath, moment) {
 
     function getMetricNames(aggregators, postAggregators) {
       var displayAggs = _.filter(aggregators, function (agg) {
-        return agg.type !== 'approxHistogramFold' && agg.hidden != true;
+        return agg.type !== 'quantilesDoublesSketch' && agg.hidden != true;
       });
       return _.union(_.map(displayAggs, 'name'), _.map(postAggregators, 'name'));
     }

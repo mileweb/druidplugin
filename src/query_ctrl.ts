@@ -49,7 +49,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       "doubleSum": _.partial(this.validateSimpleAggregator.bind(this), 'doubleSum'),
       "doubleMax": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMax'),
       "doubleMin": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMin'),
-      "approxHistogramFold": this.validateApproxHistogramFoldAggregator.bind(this),
+      "quantilesDoublesSketch": this.validateQuantilesDoublesSketchAggregator.bind(this),
       "hyperUnique": _.partial(this.validateSimpleAggregator.bind(this), 'hyperUnique'),
       "json": this.validateJsonAggregator,
       "thetaSketch": this.validateThetaSketchAggregator.bind(this)
@@ -602,13 +602,13 @@ export class DruidQueryCtrl extends QueryCtrl {
       return null;
     }
 
-    validateApproxHistogramFoldAggregator(target) {
-      var err = this.validateSimpleAggregator('approxHistogramFold', target);
-      if (err) { return err; }
-      //TODO - check that resolution and numBuckets are ints (if given)
-      //TODO - check that lowerLimit and upperLimit are flots (if given)
-      return null;
-    }
+
+   validateQuantilesDoublesSketchAggregator(target) {
+    var err = this.validateSimpleAggregator('quantilesDoublesSketch', target);
+    if (err) { return err; }
+    //TODO - check that parameter k is a power of 2 from 2 to 32768 (if given)
+    return null;
+  }
 
     validateThetaSketchAggregator(target) {
       var err = this.validateSimpleAggregator('thetaSketch', target);
