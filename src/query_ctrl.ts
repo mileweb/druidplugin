@@ -66,7 +66,8 @@ export class DruidQueryCtrl extends QueryCtrl {
     defaultQueryType = "timeseries";
     defaultFilterType = "selector";
     defaultAggregatorType = "count";
-    defaultPostAggregator = {type: 'arithmetic', 'fn': '+'};
+    // defaultPostAggregator = {type: 'arithmetic', 'fn': '+'};
+    defaultPostAggregatorType = 'arithmetic';
     customGranularities = ['second', 'minute', 'five_minute', 'fifteen_minute', 'thirty_minute', 'hour', 'day', 'week', 'month', 'quarter', 'year', 'all'];
     defaultCustomGranularity = 'five_minute';
     defaultSelectDimension = "";
@@ -396,7 +397,8 @@ export class DruidQueryCtrl extends QueryCtrl {
     }
 
     clearCurrentPostAggregator() {
-      this.target.currentPostAggregator = _.clone(this.defaultPostAggregator);;
+      // this.target.currentPostAggregator = _.clone(this.defaultPostAggregator);;
+      this.target.currentPostAggregator = {type: this.defaultPostAggregatorType, 'fn': '+'};
       this.addPostAggregatorMode = false;
       this.targetBlur();
     }
