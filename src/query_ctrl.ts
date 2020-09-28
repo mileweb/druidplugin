@@ -643,12 +643,12 @@ export class DruidQueryCtrl extends QueryCtrl {
       if (!target.currentPostAggregator.name) {
         return "Must provide an output name for " + type + " post aggregator.";
       }
-      if (!target.currentPostAggregator.field) {
+      if (!target.currentPostAggregator.fieldName) {
         return "Must provide an aggregator name for " + type + " post aggregator.";
       }else{
         target.currentPostAggregator.field = {
           "type": "fieldAccess",
-          "fieldName": target.currentPostAggregator.field
+          "fieldName": target.currentPostAggregator.fieldName
           }
       }
       //TODO - check that field is a valid aggregation (exists and of correct type)
