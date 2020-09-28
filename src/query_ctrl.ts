@@ -643,7 +643,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       var err = this.validateSimplePostAggregator('quantile', target);
       if (err) { return err; }
       if (!target.currentPostAggregator.probability) {
-        return "Must provide a probability for the quantile post aggregator.";
+        return "Must provide a fraction for the quantile post aggregator.";
       }
       return null;
     }
