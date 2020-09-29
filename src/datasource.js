@@ -228,7 +228,24 @@ function (angular, _, dateMath, moment) {
       */
      var postAggregators = _.map(target.postAggregators, (postAgg) => {
         if(postAgg.type === "quantilesDoublesSketchToQuantiles"){
-          delete postAgg.fieldName;
+          /** 
+          var tmpField = postAgg.field;
+          postAgg.field = {
+              "type": "fieldAccess",
+              "fieldName": tmpField
+          }
+
+          var tmpFractions = postAgg.fractions;
+          postAgg.fractions = tmpFractions.split(",");
+         */
+
+          postAgg.field = {
+            "type": "fieldAccess",
+            "fieldName": tmpField
+          }
+
+          postAgg.fractions = postAgg.fractions.split(",").map(function (f) { return f.trim(); });
+
         }
         return postAgg;
      })
