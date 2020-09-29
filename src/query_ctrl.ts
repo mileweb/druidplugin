@@ -645,7 +645,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       if (!target.currentPostAggregator.name) {
         return "Must provide an output name for " + type + " post aggregator.";
       }
-      if (!target.currentPostAggregator.fieldName) {
+      if (!target.currentPostAggregator.field) {
         return "Must provide an aggregator name for " + type + " post aggregator.";
       }
 
