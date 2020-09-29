@@ -647,12 +647,14 @@ export class DruidQueryCtrl extends QueryCtrl {
       }
       if (!target.currentPostAggregator.fieldName) {
         return "Must provide an aggregator name for " + type + " post aggregator.";
-      }else{
-        target.currentPostAggregator.field = {
-          "type": "fieldAccess",
-          "fieldName": target.currentPostAggregator.fieldName
-        }
       }
+
+      var fraction = target.currentPostAggregator.fraction;
+      if (!fraction) {
+        return "Must provide an fraction for " + type + " post aggregator.";
+      }else if(isNaN(fraction) || fraction === null || fraction === ""){
+        return "Fraction must be number type";
+      }      
       //TODO - check that field is a valid aggregation (exists and of correct type)
       return null;      
     }
