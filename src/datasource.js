@@ -227,7 +227,7 @@ function (angular, _, dateMath, moment) {
       });
       */
      var postAggregators = _.map(target.postAggregators, (postAgg) => {
-        if(postAgg.type === "quantilesDoublesSketchToQuantile"){
+        if(postAgg.type === "quantilesDoublesSketchToQuantiles"){
           delete postAgg.fieldName;
         }
         return postAgg;

@@ -58,7 +58,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       "arithmetic": this.validateArithmeticPostAggregator.bind(this),
       "max": this.validateMaxPostAggregator.bind(this),
       "min": this.validateMinPostAggregator.bind(this),
-      "quantilesDoublesSketchToQuantile":_.partial(this.validateQuantilePostAggregator.bind(this), 'quantilesDoublesSketchToQuantile'),
+      "quantilesDoublesSketchToQuantiles":_.partial(this.validateQuantilesPostAggregator.bind(this), 'quantilesDoublesSketchToQuantiles'),
       "javascript": this.validateJavascriptPostAggregator.bind(this)
     };
 
@@ -641,7 +641,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       return null;
     }
 
-    validateQuantilePostAggregator(type, target) {
+    validateQuantilesPostAggregator(type, target) {
       if (!target.currentPostAggregator.name) {
         return "Must provide an output name for " + type + " post aggregator.";
       }
@@ -653,7 +653,7 @@ export class DruidQueryCtrl extends QueryCtrl {
           "fieldName": target.currentPostAggregator.fieldName
         }
       }
-      //TODO - check that field is a valid aggregation (exists and of correct type)
+      //TODO - check that fieldName is a valid aggregation (exists and of correct type)
       return null;      
     }
 
