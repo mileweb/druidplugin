@@ -652,7 +652,6 @@ export class DruidQueryCtrl extends QueryCtrl {
           "type": "fieldAccess",
           "fieldName": target.currentPostAggregator.fieldName
         }
-        delete target.currentPostAggregator.fieldName;
       }
       //TODO - check that field is a valid aggregation (exists and of correct type)
       return null;      
