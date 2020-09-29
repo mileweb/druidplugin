@@ -241,7 +241,7 @@ function (angular, _, dateMath, moment) {
 
           postAgg.field = {
             "type": "fieldAccess",
-            "fieldName": tmpField
+            "fieldName": postAgg.field
           }
 
           postAgg.fractions = postAgg.fractions.split(",").map(function (f) { return f.trim(); });
