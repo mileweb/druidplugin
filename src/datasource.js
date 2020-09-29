@@ -219,7 +219,7 @@ function (angular, _, dateMath, moment) {
       var filters = target.filters;
       var aggregators = target.aggregators && target.aggregators.map(splitCardinalityFields);
       var postAggregators = _.map(target.postAggregators, (postAgg) => {
-        if(postAgg.type === "quantilesDoublesSketchToQuantiles"){
+        if(postAgg.type === "quantilesDoublesSketchToQuantile"){
 
           postAgg.field = {
             "type": "fieldAccess",
