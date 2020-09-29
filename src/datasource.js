@@ -218,33 +218,20 @@ function (angular, _, dateMath, moment) {
       var datasource = target.druidDS;
       var filters = target.filters;
       var aggregators = target.aggregators && target.aggregators.map(splitCardinalityFields);
-      /** 
-      var postAggregators = target.postAggregators.map(function(postAgg) {
-        if(postAgg.type === "quantilesDoublesSketchToQuantile"){
-          delete postAgg.fieldName;
-          return postAgg;
-        }
-      });
-      */
+      
      var postAggregators = _.map(target.postAggregators, (postAgg) => {
         if(postAgg.type === "quantilesDoublesSketchToQuantiles"){
-          /** 
-          var tmpField = postAgg.field;
-          postAgg.field = {
-              "type": "fieldAccess",
-              "fieldName": tmpField
-          }
-
-          var tmpFractions = postAgg.fractions;
-          postAgg.fractions = tmpFractions.split(",");
-         */
 
           postAgg.field = {
             "type": "fieldAccess",
             "fieldName": postAgg.field
           }
 
-          postAgg.fractions = postAgg.fractions.split(",").map(function (f) { return f.trim(); });
+          postAgg.fractions = postAgg.fractions
+            .split(",")
+            .map(function (f) {
+               return parseFloat(f.trim()); 
+            });
 
         }
         return postAgg;
