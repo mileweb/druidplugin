@@ -583,7 +583,7 @@
   <!-- quantilesDoublesSketchToQuantile -->
   <div class="gf-form" ng-show="ctrl.addPostAggregatorMode" ng-switch on="ctrl.target.currentPostAggregator.type">
     <input type="text" ng-switch-when="quantilesDoublesSketchToQuantile" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.name" placeholder="output name" ng-blur="ctrl.targetBlur()">
-    <input type="text" ng-switch-when="quantilesDoublesSketchToQuantile" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.field" placeholder="agg name" ng-blur="ctrl.targetBlur()">
+    <input type="text" ng-switch-when="quantilesDoublesSketchToQuantile" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.fieldName" placeholder="agg name" ng-blur="ctrl.targetBlur()">
     <input type="text" ng-switch-when="quantilesDoublesSketchToQuantile" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.fraction" placeholder="fraction" ng-blur="ctrl.targetBlur()">
   </div>
 
