@@ -82,7 +82,7 @@ function (angular, _, dateMath, moment) {
       "doubleMin": _.partialRight(replaceTemplateValues, ['fieldName']),
       "quantilesDoublesSketch": _.partialRight(replaceTemplateValues, ['fieldName']),
       "hyperUnique": _.partialRight(replaceTemplateValues, ['fieldName']),
-      "javascript": _.partialRight(replaceTemplateValues, ['javascript']),
+      "javascript": _.partialRight(replaceTemplateValues, ['value']),
       "thetaSketch": _.partialRight(replaceTemplateValues, ['fieldName'])
     };
 
@@ -209,7 +209,7 @@ function (angular, _, dateMath, moment) {
 
         //adds javascript type aggregator
         if(aggregator.type === 'javascript'){
-           aggregator= splitCardinalityFields(JSON.parse(aggregator.javascript))
+           aggregator= splitCardinalityFields(JSON.parse(aggregator.value))
         }
 
         return aggregator;
