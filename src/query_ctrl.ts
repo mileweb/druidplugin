@@ -571,18 +571,6 @@ export class DruidQueryCtrl extends QueryCtrl {
       return null;
     }
 
-    validateJavascriptPostAggregator1(target) {
-      try {
-          var json = JSON.parse(target.currentPostAggregator.javascript);
-          if (!json || !json['name'] || !json['fieldNames']) {
-              return "Must specify name and fieldNames.";
-          }
-      } catch (e) {
-          return "Must provide valid json post aggregator.";
-      }
-      return null;
-  }
-
     validateJavascriptAggregator(target) {
       try {
         var json = JSON.parse(target.currentAggregator.value);
