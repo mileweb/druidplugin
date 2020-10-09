@@ -210,7 +210,9 @@ function (angular, _, dateMath, moment) {
         //adds javascript type aggregator
         if(aggregator.type === 'javascript'){
           //  aggregator= splitCardinalityFields(JSON.parse(aggregator.value))
-           aggregator= JSON.parse(aggregator.value);
+          var jsAggHidden = aggregator.hidden;
+          aggregator= JSON.parse(aggregator.value);
+          aggregator.hidden = jsAggHidden;
         }
 
         return aggregator;
