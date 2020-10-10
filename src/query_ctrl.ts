@@ -49,7 +49,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       "doubleSum": _.partial(this.validateSimpleAggregator.bind(this), 'doubleSum'),
       "doubleMax": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMax'),
       "doubleMin": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMin'),
-      "approxHistogramFold": this.validateApproxHistogramFoldAggregator.bind(this),
+      "quantilesDoublesSketch": this.validateQuantilesDoublesSketchAggregator.bind(this),
       "hyperUnique": _.partial(this.validateSimpleAggregator.bind(this), 'hyperUnique'),
       "json": this.validateJsonAggregator,
       "thetaSketch": this.validateThetaSketchAggregator.bind(this)
@@ -58,7 +58,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       "arithmetic": this.validateArithmeticPostAggregator.bind(this),
       "max": this.validateMaxPostAggregator.bind(this),
       "min": this.validateMinPostAggregator.bind(this),
-      "quantile": this.validateQuantilePostAggregator.bind(this),
+      "quantilesDoublesSketchToQuantile":_.partial(this.validateQuantilePostAggregator.bind(this), 'quantilesDoublesSketchToQuantile'),
       "javascript": this.validateJavascriptPostAggregator.bind(this)
     };
 
@@ -66,7 +66,8 @@ export class DruidQueryCtrl extends QueryCtrl {
     defaultQueryType = "timeseries";
     defaultFilterType = "selector";
     defaultAggregatorType = "count";
-    defaultPostAggregator = {type: 'arithmetic', 'fn': '+'};
+    // defaultPostAggregator = {type: 'arithmetic', 'fn': '+'};
+    defaultPostAggregatorType = 'arithmetic';
     customGranularities = ['second', 'minute', 'five_minute', 'fifteen_minute', 'thirty_minute', 'hour', 'day', 'week', 'month', 'quarter', 'year', 'all'];
     defaultCustomGranularity = 'five_minute';
     defaultSelectDimension = "";
@@ -396,7 +397,8 @@ export class DruidQueryCtrl extends QueryCtrl {
     }
 
     clearCurrentPostAggregator() {
-      this.target.currentPostAggregator = _.clone(this.defaultPostAggregator);;
+      // this.target.currentPostAggregator = _.clone(this.defaultPostAggregator);;
+      this.target.currentPostAggregator = {type: this.defaultPostAggregatorType};
       this.addPostAggregatorMode = false;
       this.targetBlur();
     }
@@ -602,13 +604,13 @@ export class DruidQueryCtrl extends QueryCtrl {
       return null;
     }
 
-    validateApproxHistogramFoldAggregator(target) {
-      var err = this.validateSimpleAggregator('approxHistogramFold', target);
-      if (err) { return err; }
-      //TODO - check that resolution and numBuckets are ints (if given)
-      //TODO - check that lowerLimit and upperLimit are flots (if given)
-      return null;
-    }
+
+   validateQuantilesDoublesSketchAggregator(target) {
+    var err = this.validateSimpleAggregator('quantilesDoublesSketch', target);
+    if (err) { return err; }
+    //TODO - check that parameter k is a power of 2 from 2 to 32768 (if given)
+    return null;
+  }
 
     validateThetaSketchAggregator(target) {
       var err = this.validateSimpleAggregator('thetaSketch', target);
@@ -639,13 +641,22 @@ export class DruidQueryCtrl extends QueryCtrl {
       return null;
     }
 
-    validateQuantilePostAggregator(target) {
-      var err = this.validateSimplePostAggregator('quantile', target);
-      if (err) { return err; }
-      if (!target.currentPostAggregator.probability) {
-        return "Must provide a probability for the quantile post aggregator.";
+    validateQuantilePostAggregator(type, target) {
+      if (!target.currentPostAggregator.name) {
+        return "Must provide an output name for " + type + " post aggregator.";
       }
-      return null;
+      if (!target.currentPostAggregator.field) {
+        return "Must provide an aggregator name for " + type + " post aggregator.";
+      }
+
+      var fraction = target.currentPostAggregator.fraction;
+      if (!fraction) {
+        return "Must provide an fraction for " + type + " post aggregator.";
+      }else if(isNaN(fraction) || fraction === null || fraction === ""){
+        return "Fraction must be number type";
+      }      
+      //TODO - check that field is a valid aggregation (exists and of correct type)
+      return null;      
     }
 
     validateJavascriptPostAggregator(target) {
