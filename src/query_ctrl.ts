@@ -51,7 +51,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       "doubleMin": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMin'),
       "quantilesDoublesSketch": this.validateQuantilesDoublesSketchAggregator.bind(this),
       "hyperUnique": _.partial(this.validateSimpleAggregator.bind(this), 'hyperUnique'),
-      "json": this.validateJsonAggregator,
+      "javascript": this.validateJavascriptAggregator.bind(this),
       "thetaSketch": this.validateThetaSketchAggregator.bind(this)
     };
     postAggregatorValidators = {
@@ -571,18 +571,18 @@ export class DruidQueryCtrl extends QueryCtrl {
       return null;
     }
 
-    validateJsonAggregator(target) {
-      if (!target.currentAggregator.value) {
-        return "Must provide an value for json aggregator.";
-      }
-      if(!target.currentAggregator.value.toString().includes('$')){
-        try {
-            JSON.parse(target.currentAggregator.value);
-        } catch (e) {
-            throw "Must provide valid json aggregator";
+    validateJavascriptAggregator(target) {
+      try {
+        var json = JSON.parse(target.currentAggregator.value);
+        if (!json || !json['type'] || !json['name'] || !json['fieldNames']) {
+            return "Must specify type, name and fieldNames.";
+        }else if(!json['fnAggregate'] || !json['fnCombine'] || !json['fnReset']){
+            return "Must specify fnAggregate, fnCombine and fnReset.";
         }
-      }
-      return null;
+    } catch (e) {
+        return "Must provide valid json aggregator.";
+    }
+    return null;
     }
 
     validateCardinalityAggregator(type, target) {
