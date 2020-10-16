@@ -74,7 +74,7 @@ export class DruidQueryCtrl extends QueryCtrl {
     defaultSelectMetric = "";
     defaultScanColumn = "";
     defaultLimit = 1000;
-
+    defaultTopNThreshold = 20;
 
   /** @ngInject **/
   constructor($scope, $injector, $q) {
@@ -120,6 +120,10 @@ export class DruidQueryCtrl extends QueryCtrl {
 
       if (!this.target.limit) {
         this.target.limit = this.defaultLimit;
+      }
+
+      if (!this.target.threshold) {
+        this.target.threshold = this.defaultTopNThreshold;
       }
 
     // needs to be defined here as it is called from typeahead
@@ -449,6 +453,21 @@ export class DruidQueryCtrl extends QueryCtrl {
       return true;
     }
 
+    validateThreshold(target, errs) {
+      if (!target.threshold) {
+        errs.threshold = "Must specify a threshold for TopN Query";
+        return false;
+      }
+      var intThreshold= parseInt(target.threshold);
+      if (isNaN(intThreshold)) {
+        errs.threshold = "Threshold must be a integer";
+        return false;
+      }
+      target.threshold = intThreshold;
+      return true;
+    }
+
+
     validateOrderBy(target) {
       if (target.orderBy && !Array.isArray(target.orderBy)) {
         target.orderBy = target.orderBy.split(",");
@@ -491,8 +510,8 @@ export class DruidQueryCtrl extends QueryCtrl {
         errs.druidMetric = "Must specify a metric";
         return false;
       }
-      console.log(this, this.validateLimit);
-      if (!this.validateLimit(target, errs)) {
+      // console.log(this, this.validateLimit);
+      if (!this.validateThreshold(target, errs)) {
         return false;
       }
       return true;

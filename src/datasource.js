@@ -256,7 +256,7 @@ function (angular, _, dateMath, moment) {
         }
 
       if (target.queryType === 'topN') {
-        var threshold = target.limit;
+        var threshold = target.threshold;
         var metric = target.druidMetric;
         var dimension = templateSrv.replace(target.dimension);
         var isTopNQueryForVar = target.isTopNQueryForVar

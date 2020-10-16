@@ -66,11 +66,11 @@
       </label>
     </div>
     <div ng-switch-when="topN" class="gf-form">
-      <label class="gf-form-label query-keyword width-4">
-        Limit
+      <label class="gf-form-label query-keyword width-6">
+        Threshold
       </label>
-      <input type="number" required class="gf-form-input input-small" ng-model="ctrl.target.limit" spellcheck='false' ng-blur="ctrl.targetBlur()" />
-      <label class="gf-form-label" bs-tooltip="ctrl.target.errors.limit" style="color: rgb(229, 189, 28)" ng-show="ctrl.target.errors.limit">
+      <input type="number" required class="gf-form-input input-small" ng-model="ctrl.target.threshold" spellcheck='false' ng-blur="ctrl.targetBlur()" />
+      <label class="gf-form-label" bs-tooltip="ctrl.target.errors.threshold" style="color: rgb(229, 189, 28)" ng-show="ctrl.target.errors.threshold">
         <i class="fa fa-warning"></i>
       </label>
     </div>
