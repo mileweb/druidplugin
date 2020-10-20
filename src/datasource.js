@@ -856,7 +856,7 @@ function (angular, _, dateMath, moment) {
           "dimension": dimension,
           "druidMetric": metric,
           "aggregators": [{"type": "count", "name": metric}],
-          "limit": 250,
+          "threshold": 250,
           "isTopNQueryForVar": true
       };
 
