@@ -34,7 +34,7 @@ function (angular, _, dateMath, moment) {
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
     this.periodGranularity = instanceSettings.jsonData.periodGranularity;
-    this.thresholdForVarTopN = 10;
+    const THRESHOLD_TOPN_VAR = 10;
 
     function replaceTemplateValues(obj,scopedVars, attrList) {
       if (obj.type === 'in') {
@@ -456,7 +456,7 @@ function (angular, _, dateMath, moment) {
     function buildFilterTree(filters, scopedVars) {
       //Do template variable replacement
         var adhocFilters = getAdhocFilters();
-        var maxFilterValuesSize = this.thresholdForVarTopN
+        var maxFilterValuesSize = THRESHOLD_TOPN_VAR
         if ((!filters || filters.length == 0) && (!adhocFilters || adhocFilters.length == 0)) {
             return null;
         }
@@ -483,7 +483,7 @@ function (angular, _, dateMath, moment) {
         return filterTemplateExpanders[filter.type](filter, scopedVars);
       })
       .filter(function(filter){
-        //delete filter whose valuesLength up to thresholdForVarTopN value.
+        //delete filter whose valuesLength up to THRESHOLD_TOPN_VAR value.
         return !(filter.type === "in" && filter.values.length === maxFilterValuesSize)
       })
       .map(function (filter) {
@@ -860,7 +860,7 @@ function (angular, _, dateMath, moment) {
           "dimension": dimension,
           "druidMetric": metric,
           "aggregators": [{"type": "count", "name": metric}],
-          "threshold": this.thresholdForVarTopN,
+          "threshold": THRESHOLD_TOPN_VAR,
           "isTopNQueryForVar": true
       };
 
