@@ -34,7 +34,7 @@ function (angular, _, dateMath, moment) {
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
     this.periodGranularity = instanceSettings.jsonData.periodGranularity;
-    const THRESHOLD_TOPN_VAR = 10;
+    const THRESHOLD_TOPN_VAR = 250;
 
     function replaceTemplateValues(obj,scopedVars, attrList) {
       if (obj.type === 'in') {
