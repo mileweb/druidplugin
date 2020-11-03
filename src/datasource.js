@@ -34,6 +34,7 @@ function (angular, _, dateMath, moment) {
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
     this.periodGranularity = instanceSettings.jsonData.periodGranularity;
+    this.thresholdForVarTopN = 10;
 
     function replaceTemplateValues(obj,scopedVars, attrList) {
       if (obj.type === 'in') {
@@ -428,7 +429,6 @@ function (angular, _, dateMath, moment) {
                 var dimensions = _.map(response.data.dimensions, function (e) {
                     return { "text": e };
                 });
-                dimensions.unshift({ "text": "-" });
                 return dimensions;
             });
         } else if (params[1] == 'metrics') {
@@ -436,7 +436,6 @@ function (angular, _, dateMath, moment) {
                 var metrics = _.map(response.data.metrics, function (e) {
                     return { "text": e };
                 });
-                metrics.unshift({ "text": "-" });
                 return metrics;
             });
         } else {
@@ -457,6 +456,7 @@ function (angular, _, dateMath, moment) {
     function buildFilterTree(filters, scopedVars) {
       //Do template variable replacement
         var adhocFilters = getAdhocFilters();
+        var maxFilterValuesSize = this.thresholdForVarTopN
         if ((!filters || filters.length == 0) && (!adhocFilters || adhocFilters.length == 0)) {
             return null;
         }
@@ -481,6 +481,10 @@ function (angular, _, dateMath, moment) {
         
       var replacedFilters = targetFilters.map(function (filter) {
         return filterTemplateExpanders[filter.type](filter, scopedVars);
+      })
+      .filter(function(filter){
+        //delete filter whose valuesLength up to thresholdForVarTopN value.
+        return !(filter.type === "in" && filter.values.length === maxFilterValuesSize)
       })
       .map(function (filter) {
         var finalFilter = _.omit(filter, 'negate');
@@ -536,7 +540,7 @@ function (angular, _, dateMath, moment) {
 
     function getMetricNames(aggregators, postAggregators) {
       var displayAggs = _.filter(aggregators, function (agg) {
-        return agg.type !== 'quantilesDoublesSketch' && agg.hidden != true;
+        return agg.hidden != true;
       });
       return _.union(_.map(displayAggs, 'name'), _.map(postAggregators, 'name'));
     }
@@ -856,7 +860,7 @@ function (angular, _, dateMath, moment) {
           "dimension": dimension,
           "druidMetric": metric,
           "aggregators": [{"type": "count", "name": metric}],
-          "threshold": 250,
+          "threshold": this.thresholdForVarTopN,
           "isTopNQueryForVar": true
       };
 
