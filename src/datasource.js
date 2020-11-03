@@ -869,7 +869,6 @@ function (angular, _, dateMath, moment) {
           var l = _.map(results, (e) => {
               return {"text": e.target};
           });
-          l.unshift({"text": "-"});
           return l;
       });
     }
