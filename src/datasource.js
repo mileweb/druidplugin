@@ -871,7 +871,6 @@ function (angular, _, dateMath, moment) {
       });
     }
 
-
    //changes druid end
   }
   return {
