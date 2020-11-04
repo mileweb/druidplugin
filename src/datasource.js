@@ -483,7 +483,7 @@ function (angular, _, dateMath, moment) {
       .filter(function(filter){
         //delete filter whose values is any value.
         return !(filter.type === "in" && filter.values.length === 1 && filter.values[0] === "*") || 
-               !(filter.type === "selector" && filter.values === "*")
+               !(filter.type === "selector" && filter.value === "*")
       })
       .map(function (filter) {
         var finalFilter = _.omit(filter, 'negate');
