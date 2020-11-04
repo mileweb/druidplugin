@@ -428,7 +428,6 @@ function (angular, _, dateMath, moment) {
                 var dimensions = _.map(response.data.dimensions, function (e) {
                     return { "text": e };
                 });
-                dimensions.unshift({ "text": "-" });
                 return dimensions;
             });
         } else if (params[1] == 'metrics') {
@@ -436,7 +435,6 @@ function (angular, _, dateMath, moment) {
                 var metrics = _.map(response.data.metrics, function (e) {
                     return { "text": e };
                 });
-                metrics.unshift({ "text": "-" });
                 return metrics;
             });
         } else {
@@ -481,6 +479,17 @@ function (angular, _, dateMath, moment) {
         
       var replacedFilters = targetFilters.map(function (filter) {
         return filterTemplateExpanders[filter.type](filter, scopedVars);
+      })
+      .filter(function(filter){
+        //delete filter whose values is any value.
+        if(filter.type === "in"){
+          return !(filter.values.length === 1 && filter.values[0] === "*");
+        }else if(filter.type === "selector"){
+          return !(filter.value === "*");
+        }else {
+          return true;
+        }
+
       })
       .map(function (filter) {
         var finalFilter = _.omit(filter, 'negate');
@@ -536,7 +545,7 @@ function (angular, _, dateMath, moment) {
 
     function getMetricNames(aggregators, postAggregators) {
       var displayAggs = _.filter(aggregators, function (agg) {
-        return agg.type !== 'quantilesDoublesSketch' && agg.hidden != true;
+        return agg.hidden != true;
       });
       return _.union(_.map(displayAggs, 'name'), _.map(postAggregators, 'name'));
     }
@@ -865,11 +874,9 @@ function (angular, _, dateMath, moment) {
           var l = _.map(results, (e) => {
               return {"text": e.target};
           });
-          l.unshift({"text": "-"});
           return l;
       });
     }
-
 
    //changes druid end
   }
