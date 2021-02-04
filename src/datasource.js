@@ -232,7 +232,7 @@ function (angular, _, dateMath, moment) {
 
           postAgg.field = {
             "type": "fieldAccess",
-            "name": postAgg.field,
+            // "name": postAgg.field,
             "fieldName": postAgg.field
           }
 
