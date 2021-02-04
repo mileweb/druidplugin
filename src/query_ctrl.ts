@@ -59,7 +59,8 @@ export class DruidQueryCtrl extends QueryCtrl {
       "max": this.validateMaxPostAggregator.bind(this),
       "min": this.validateMinPostAggregator.bind(this),
       "quantilesDoublesSketchToQuantile":_.partial(this.validateQuantilePostAggregator.bind(this), 'quantilesDoublesSketchToQuantile'),
-      "javascript": this.validateJavascriptPostAggregator.bind(this)
+      "javascript": this.validateJavascriptPostAggregator.bind(this),
+      "thetaSketchEstimate": this.validateThetaSketchEstimatePostAggregator.bind(this)
     };
 
     arithmeticPostAggregatorFns = {'+': null, '-': null, '*': null, '/': null};
@@ -688,6 +689,12 @@ export class DruidQueryCtrl extends QueryCtrl {
             return "Must provide valid json post aggregator.";
         }
         return null;
+    }
+
+    validateThetaSketchEstimatePostAggregator(target){
+      var err = this.validateSimplePostAggregator('thetaSketchEstimate', target);
+      if (err) { return err; }
+      return null;
     }
 
     validateArithmeticPostAggregator(target) {

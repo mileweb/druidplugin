@@ -228,6 +228,14 @@ function (angular, _, dateMath, moment) {
             "type": "fieldAccess",
             "fieldName": postAgg.field
           }
+        }else if(postAgg.type === "thetaSketchEstimate"){
+
+          postAgg.field = {
+            "type": "fieldAccess",
+            "name": postAgg.field,
+            "fieldName": postAgg.field
+          }
+
         }
         return postAgg;
       });
