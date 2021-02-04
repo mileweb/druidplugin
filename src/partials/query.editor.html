@@ -434,7 +434,7 @@
       <input type="text" ng-switch-when="count" class="input-small gf-form-input" spellcheck='false' ng-model="ctrl.target.currentAggregator.name" placeholder="output name" ng-blur="ctrl.targetBlur()">
       <gf-form-switch ng-switch-when="count" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentAggregator.hidden"></gf-form-switch>
     </div>
-<!--  edit by zhanhui.xu  
+<!--  edit by   
     <div class="gf-form" ng-show="ctrl.addAggregatorMode" ng-switch on="ctrl.target.currentAggregator.type">
       <input type="text" ng-switch-when="cardinality" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentAggregator.name" placeholder="output name" ng-blur="ctrl.targetBlur()">
       <input type="text" ng-switch-when="cardinality" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentAggregator.fieldNames" ng-blur="ctrl.targetBlur()" placeholder="metric name" bs-typeahead="ctrl.getMetricsPlusDimensions" data-min-length=0>
