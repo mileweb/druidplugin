@@ -685,7 +685,7 @@ export class DruidQueryCtrl extends QueryCtrl {
 
     validateJavascriptPostAggregator(target) {
         try {
-            var json = JSON.parse(target.currentPostAggregator.javascript);
+            var json = JSON.parse(target.currentPostAggregator.value);
             if (!json || !json['name'] || !json['fieldNames']) {
                 return "Must specify name and fieldNames.";
             }
