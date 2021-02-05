@@ -555,7 +555,11 @@ function (angular, _, dateMath, moment) {
       var displayAggs = _.filter(aggregators, function (agg) {
         return agg.hidden != true;
       });
-      return _.union(_.map(displayAggs, 'name'), _.map(postAggregators, 'name'));
+
+      var displayPostAggs = _.filter(postAggregators, function (postAgg) {
+        return postAgg.hidden != true;
+      });
+      return _.union(_.map(displayAggs, 'name'), _.map(displayPostAggs, 'name'));
     }
 
     function formatTimestamp(ts) {

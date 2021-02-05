@@ -503,6 +503,7 @@
   </div>
 
   <div class="gf-form" ng-repeat="postAggregator in ctrl.target.postAggregators track by $index" class="gf-form">
+    <label class="gf-form-label" ng-if="postAggregator.hidden">Hidden&nbsp;(&nbsp;</label>
     <div ng-switch on="postAggregator.type">
       <div ng-switch-when="arithmetic">
         <label class="gf-form-label">
@@ -571,6 +572,7 @@
         </label>
       </div>      
     </div>
+    <label class="gf-form-label" ng-if="postAggregator.hidden">&nbsp;)</label>
   </div>
 
   <div class="gf-form" ng-hide="ctrl.addPostAggregatorMode">
@@ -617,6 +619,7 @@
   <div class="gf-form" ng-show="ctrl.addPostAggregatorMode" ng-switch on="ctrl.target.currentPostAggregator.type">
     <input type="text" ng-switch-when="thetaSketchEstimate" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.name" placeholder="output name" ng-blur="ctrl.targetBlur()">
     <input type="text" ng-switch-when="thetaSketchEstimate" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.field" placeholder="thetaSketch aggregator name" ng-blur="ctrl.targetBlur()">
+    <gf-form-switch ng-switch-when="thetaSketchEstimate" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentPostAggregator.hidden"></gf-form-switch>
   </div>
 
   <div class="gf-form" ng-show="ctrl.addPostAggregatorMode">
