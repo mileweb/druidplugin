@@ -379,14 +379,12 @@ export class DruidQueryCtrl extends QueryCtrl {
       this.target.errors = this.validateTarget();
       if (!this.target.errors.currentPostAggregator) {
         //Add new post aggregator to the list
-/*        
           if (this.target.currentPostAggregator.type == 'javascript') {
               this.target.postAggregators.push(JSON.parse(this.target.currentPostAggregator.javascript));
           } else {
               this.target.postAggregators.push(this.target.currentPostAggregator);
           }
-*/
-        this.target.postAggregators.push(this.target.currentPostAggregator);
+        // this.target.postAggregators.push(this.target.currentPostAggregator);
         this.clearCurrentPostAggregator();
         this.addPostAggregatorMode = false;
       }
@@ -685,7 +683,7 @@ export class DruidQueryCtrl extends QueryCtrl {
 
     validateJavascriptPostAggregator(target) {
         try {
-            var json = JSON.parse(target.currentPostAggregator.value);
+            var json = JSON.parse(target.currentPostAggregator.javascript);
             if (!json || !json['name'] || !json['fieldNames']) {
                 return "Must specify name and fieldNames.";
             }

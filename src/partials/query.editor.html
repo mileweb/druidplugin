@@ -551,7 +551,7 @@
       </div>
       <div ng-switch-when="javascript">
         <label class="gf-form-label">
-          {{postAggregator.type}}:&nbsp;{{postAggregator.value}}
+          {{postAggregator.type}}:&nbsp;{{postAggregator}}
           <a ng-click="ctrl.editPostAggregator($index)">
             <i class="fa fa-pencil"></i>
           </a>
@@ -616,7 +616,7 @@
 
   <!-- javascript -->
   <div class="gf-form" ng-show="ctrl.addPostAggregatorMode" ng-switch on="ctrl.target.currentPostAggregator.type">
-    <input type="text" ng-switch-when="javascript" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.value" placeholder="json" ng-blur="ctrl.targetBlur()">
+    <input type="text" ng-switch-when="javascript" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.javascript" placeholder="json" ng-blur="ctrl.targetBlur()">
     <gf-form-switch ng-switch-when="javascript" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentPostAggregator.hidden"></gf-form-switch>
   </div>
 
