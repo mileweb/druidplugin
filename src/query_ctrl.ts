@@ -44,13 +44,11 @@ export class DruidQueryCtrl extends QueryCtrl {
     };
     aggregatorValidators = {
       "count": this.validateCountAggregator,
-      // "cardinality": _.partial(this.validateCardinalityAggregator.bind(this), 'cardinality'),
       "longSum": _.partial(this.validateSimpleAggregator.bind(this), 'longSum'),
       "doubleSum": _.partial(this.validateSimpleAggregator.bind(this), 'doubleSum'),
       "doubleMax": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMax'),
       "doubleMin": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMin'),
       "quantilesDoublesSketch": this.validateQuantilesDoublesSketchAggregator.bind(this),
-      // "hyperUnique": _.partial(this.validateSimpleAggregator.bind(this), 'hyperUnique'),
       "javascript": this.validateJavascriptAggregator.bind(this),
       "thetaSketch": this.validateThetaSketchAggregator.bind(this)
     };
@@ -60,7 +58,6 @@ export class DruidQueryCtrl extends QueryCtrl {
       "min": this.validateMinPostAggregator.bind(this),
       "quantilesDoublesSketchToQuantile":_.partial(this.validateQuantilePostAggregator.bind(this), 'quantilesDoublesSketchToQuantile'),
       "javascript": this.validateJavascriptPostAggregator.bind(this),
-      // "thetaSketchEstimate": this.validateThetaSketchEstimatePostAggregator.bind(this)
       "thetaSketchEstimate": _.partial(this.validateThetaSketchEstimatePostAggregator.bind(this), 'thetaSketchEstimate')
     };
 
@@ -606,15 +603,6 @@ export class DruidQueryCtrl extends QueryCtrl {
     }
     return null;
     }
-/*
-    validateCardinalityAggregator(type, target) {
-      if (!target.currentAggregator.name) {
-        return "Must provide an output name for " + type + " aggregator.";
-      }
-    
-      return null;
-    }
-*/
     validateSimpleAggregator(type, target) {
       if (!target.currentAggregator.name) {
         return "Must provide an output name for " + type + " aggregator.";

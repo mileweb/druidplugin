@@ -75,13 +75,11 @@ function (angular, _, dateMath, moment) {
 
     var aggregationTemplateExpanders = {
       "count": _.partialRight(replaceTemplateValues, ['name']),
-      "cardinality": _.partialRight(replaceTemplateValues, ['fieldNames']),
       "longSum": _.partialRight(replaceTemplateValues, ['fieldName']),
       "doubleSum": _.partialRight(replaceTemplateValues, ['fieldName']),
       "doubleMax": _.partialRight(replaceTemplateValues, ['fieldName']),
       "doubleMin": _.partialRight(replaceTemplateValues, ['fieldName']),
       "quantilesDoublesSketch": _.partialRight(replaceTemplateValues, ['fieldName']),
-      "hyperUnique": _.partialRight(replaceTemplateValues, ['fieldName']),
       "javascript": _.partialRight(replaceTemplateValues, ['value']),
       "thetaSketch": _.partialRight(replaceTemplateValues, ['fieldName'])
     };
@@ -197,11 +195,6 @@ function (angular, _, dateMath, moment) {
     this._doQuery = function (from, to, granularity, target, scopedVars) {
 
       function splitCardinalityFields(aggregator) {
-
-        if(aggregator.type === 'cardinality' && typeof aggregator.fieldNames === 'string') {
-           aggregator.fieldNames = aggregator.fieldNames.split(',')
-        }
-
         //adds support for aggregation template variable
         if(aggregator.type!='count' ){
            aggregator=aggregationTemplateExpanders[aggregator.type](aggregator, scopedVars);
@@ -209,7 +202,6 @@ function (angular, _, dateMath, moment) {
 
         //adds javascript type aggregator
         if(aggregator.type === 'javascript'){
-          //  aggregator= splitCardinalityFields(JSON.parse(aggregator.value))
           var jsAggHidden = aggregator.hidden;
           aggregator= JSON.parse(aggregator.value);
           aggregator.hidden = jsAggHidden;
