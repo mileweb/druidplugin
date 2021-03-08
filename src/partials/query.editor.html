@@ -312,17 +312,6 @@
             </a>
           </label>
         </div>
-        <div ng-switch-when="cardinality">
-          <label class="gf-form-label">
-            {{aggregator.type}}:&nbsp;name&nbsp;=&nbsp;{{aggregator.name}},&nbsp;fieldNames&nbsp;=&nbsp;{{aggregator.fieldNames}}
-            <a ng-click="ctrl.editAggregator($index)">
-              <i class="fa fa-pencil"></i>
-            </a>
-            <a ng-click="ctrl.removeAggregator($index)">
-              <i class="fa fa-remove"></i>
-            </a>
-          </label>
-        </div>
         <div ng-switch-when="longSum">
           <label class="gf-form-label">
             {{aggregator.type}}:&nbsp;name&nbsp;=&nbsp;{{aggregator.name}},&nbsp;fieldName&nbsp;=&nbsp;{{aggregator.fieldName}}
@@ -380,17 +369,6 @@
             </a>
           </label>
         </div>
-        <div ng-switch-when="hyperUnique">
-          <label class="gf-form-label">
-          {{aggregator.type}}:&nbsp;name&nbsp;=&nbsp;{{aggregator.name}},&nbsp;fieldName&nbsp;=&nbsp;{{aggregator.fieldName}}
-            <a ng-click="ctrl.editAggregator($index)">
-              <i class="fa fa-pencil"></i>
-            </a>
-          <a ng-click="ctrl.removeAggregator($index)">
-            <i class="fa fa-remove"></i>
-          </a>
-          </label>
-        </div>
         <div ng-switch-when="javascript">
           <label class="gf-form-label">
             {{aggregator.type}}:&nbsp;name&nbsp;=&nbsp;{{aggregator.value}}
@@ -431,11 +409,6 @@
       <gf-form-switch ng-switch-when="count" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentAggregator.hidden"></gf-form-switch>
     </div>
     <div class="gf-form" ng-show="ctrl.addAggregatorMode" ng-switch on="ctrl.target.currentAggregator.type">
-      <input type="text" ng-switch-when="cardinality" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentAggregator.name" placeholder="output name" ng-blur="ctrl.targetBlur()">
-      <input type="text" ng-switch-when="cardinality" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentAggregator.fieldNames" ng-blur="ctrl.targetBlur()" placeholder="metric name" bs-typeahead="ctrl.getMetricsPlusDimensions" data-min-length=0>
-      <gf-form-switch ng-switch-when="cardinality" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentAggregator.hidden"></gf-form-switch>
-    </div>
-    <div class="gf-form" ng-show="ctrl.addAggregatorMode" ng-switch on="ctrl.target.currentAggregator.type">
       <input type="text" ng-switch-when="longSum" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentAggregator.name" placeholder="output name" ng-blur="ctrl.targetBlur()">
       <input type="text" ng-switch-when="longSum" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentAggregator.fieldName" ng-blur="ctrl.targetBlur()" placeholder="metric name" bs-typeahead="ctrl.getMetrics" data-min-length=0>
       <gf-form-switch ng-switch-when="longSum" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentAggregator.hidden"></gf-form-switch>
@@ -462,11 +435,6 @@
       <gf-form-switch ng-switch-when="quantilesDoublesSketch" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentAggregator.hidden"></gf-form-switch>
     </div>
     <div class="gf-form" ng-show="ctrl.addAggregatorMode" ng-switch on="ctrl.target.currentAggregator.type">
-      <input type="text" ng-switch-when="hyperUnique" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentAggregator.name" placeholder="output name" ng-blur="ctrl.targetBlur()">
-      <input type="text" ng-switch-when="hyperUnique" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentAggregator.fieldName" ng-blur="ctrl.targetBlur()" placeholder="metric name" bs-typeahead="ctrl.getMetrics" data-min-length=0>
-      <gf-form-switch ng-switch-when="hyperUnique" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentAggregator.hidden"></gf-form-switch>
-    </div>
-    <div class="gf-form" ng-show="ctrl.addAggregatorMode" ng-switch on="ctrl.target.currentAggregator.type">
       <input type="text" ng-switch-when="javascript" class="input-small gf-form-input" spellcheck='false' ng-model="ctrl.target.currentAggregator.value" placeholder="json" ng-blur="ctrl.targetBlur()">
       <gf-form-switch ng-switch-when="javascript" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentAggregator.hidden"></gf-form-switch>
     </div>
@@ -475,6 +443,7 @@
       <input type="text" ng-switch-when="thetaSketch" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentAggregator.fieldName" ng-blur="ctrl.targetBlur()" placeholder="metric name" bs-typeahead="ctrl.getMetrics" data-min-length=0>
       <gf-form-switch ng-switch-when="thetaSketch" class="gf-form" label="isInputThetaSketch" label-class="query-keyword" checked="ctrl.target.currentAggregator.isInputThetaSketch"></gf-form-switch>
       <input type="text" ng-switch-when="thetaSketch" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentAggregator.size" ng-blur="ctrl.targetBlur()" placeholder="size" data-min-length=0>
+      <gf-form-switch ng-switch-when="thetaSketch" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentAggregator.hidden"></gf-form-switch>
     </div>
     <div class="gf-form" ng-show="ctrl.addAggregatorMode">
       <label class="gf-form-label">
@@ -494,6 +463,7 @@
   </div>
 
   <div class="gf-form" ng-repeat="postAggregator in ctrl.target.postAggregators track by $index" class="gf-form">
+    <label class="gf-form-label" ng-if="postAggregator.hidden">Hidden&nbsp;(&nbsp;</label>
     <div ng-switch on="postAggregator.type">
       <div ng-switch-when="arithmetic">
         <label class="gf-form-label">
@@ -550,7 +520,19 @@
           </a>
         </label>
       </div>
+      <div ng-switch-when="thetaSketchEstimate">
+        <label class="gf-form-label">
+          {{postAggregator.type}}:&nbsp;name&nbsp;=&nbsp;{{postAggregator.name}},&nbsp;field&nbsp;=&nbsp;{{postAggregator.field}}
+          <a ng-click="ctrl.editPostAggregator($index)">
+            <i class="fa fa-pencil"></i>
+          </a>
+          <a ng-click="ctrl.removePostAggregator($index)">
+            <i class="fa fa-remove"></i>
+          </a>
+        </label>
+      </div>      
     </div>
+    <label class="gf-form-label" ng-if="postAggregator.hidden">&nbsp;)</label>
   </div>
 
   <div class="gf-form" ng-hide="ctrl.addPostAggregatorMode">
@@ -567,18 +549,21 @@
     <input type="text" ng-switch-when="arithmetic" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.name" placeholder="output name" ng-blur="ctrl.targetBlur()">
     <select ng-switch-when="arithmetic" class="input-small gf-form-input" ng-model="ctrl.target.currentPostAggregator.fn" ng-options="fn for fn in ctrl.arithmeticPostAggregator" ng-change="ctrl.targetBlur()"></select>
     <input type="text" ng-switch-when="arithmetic" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.fields" placeholder="field1,field2" ng-blur="ctrl.targetBlur()">
+    <gf-form-switch ng-switch-when="arithmetic" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentPostAggregator.hidden"></gf-form-switch>
   </div>
 
   <!-- max -->
   <div class="gf-form" ng-show="ctrl.addPostAggregatorMode" ng-switch on="ctrl.target.currentPostAggregator.type">
     <input type="text" ng-switch-when="max" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.name" placeholder="output name" ng-blur="ctrl.targetBlur()">
     <input type="text" ng-switch-when="max" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.fieldName" placeholder="agg name" ng-blur="ctrl.targetBlur()">
+    <gf-form-switch ng-switch-when="max" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentPostAggregator.hidden"></gf-form-switch>
   </div>
 
   <!-- min -->
   <div class="gf-form" ng-show="ctrl.addPostAggregatorMode" ng-switch on="ctrl.target.currentPostAggregator.type">
     <input type="text" ng-switch-when="min" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.name" placeholder="output name" ng-blur="ctrl.targetBlur()">
     <input type="text" ng-switch-when="min" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.fieldName" placeholder="agg name" ng-blur="ctrl.targetBlur()">
+    <gf-form-switch ng-switch-when="min" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentPostAggregator.hidden"></gf-form-switch>
   </div>
 
   <!-- quantilesDoublesSketchToQuantile -->
@@ -586,11 +571,20 @@
     <input type="text" ng-switch-when="quantilesDoublesSketchToQuantile" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.name" placeholder="output name" ng-blur="ctrl.targetBlur()">
     <input type="text" ng-switch-when="quantilesDoublesSketchToQuantile" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.field" placeholder="agg name" ng-blur="ctrl.targetBlur()">
     <input type="text" ng-switch-when="quantilesDoublesSketchToQuantile" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.fraction" placeholder="fraction" ng-blur="ctrl.targetBlur()">
+    <gf-form-switch ng-switch-when="quantilesDoublesSketchToQuantile" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentPostAggregator.hidden"></gf-form-switch>
   </div>
 
   <!-- javascript -->
   <div class="gf-form" ng-show="ctrl.addPostAggregatorMode" ng-switch on="ctrl.target.currentPostAggregator.type">
     <input type="text" ng-switch-when="javascript" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.javascript" placeholder="json" ng-blur="ctrl.targetBlur()">
+    <gf-form-switch ng-switch-when="javascript" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentPostAggregator.hidden"></gf-form-switch>
+  </div>
+
+  <!-- thetaSketchEstimate -->
+  <div class="gf-form" ng-show="ctrl.addPostAggregatorMode" ng-switch on="ctrl.target.currentPostAggregator.type">
+    <input type="text" ng-switch-when="thetaSketchEstimate" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.name" placeholder="output name" ng-blur="ctrl.targetBlur()">
+    <input type="text" ng-switch-when="thetaSketchEstimate" class="input-small gf-form-input" spellcheck="false" ng-model="ctrl.target.currentPostAggregator.field" placeholder="thetaSketch aggregator name" ng-blur="ctrl.targetBlur()">
+    <gf-form-switch ng-switch-when="thetaSketchEstimate" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentPostAggregator.hidden"></gf-form-switch>
   </div>
 
   <div class="gf-form" ng-show="ctrl.addPostAggregatorMode">

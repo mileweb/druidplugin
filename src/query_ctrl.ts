@@ -44,13 +44,11 @@ export class DruidQueryCtrl extends QueryCtrl {
     };
     aggregatorValidators = {
       "count": this.validateCountAggregator,
-      "cardinality": _.partial(this.validateCardinalityAggregator.bind(this), 'cardinality'),
       "longSum": _.partial(this.validateSimpleAggregator.bind(this), 'longSum'),
       "doubleSum": _.partial(this.validateSimpleAggregator.bind(this), 'doubleSum'),
       "doubleMax": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMax'),
       "doubleMin": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMin'),
       "quantilesDoublesSketch": this.validateQuantilesDoublesSketchAggregator.bind(this),
-      "hyperUnique": _.partial(this.validateSimpleAggregator.bind(this), 'hyperUnique'),
       "javascript": this.validateJavascriptAggregator.bind(this),
       "thetaSketch": this.validateThetaSketchAggregator.bind(this)
     };
@@ -59,7 +57,8 @@ export class DruidQueryCtrl extends QueryCtrl {
       "max": this.validateMaxPostAggregator.bind(this),
       "min": this.validateMinPostAggregator.bind(this),
       "quantilesDoublesSketchToQuantile":_.partial(this.validateQuantilePostAggregator.bind(this), 'quantilesDoublesSketchToQuantile'),
-      "javascript": this.validateJavascriptPostAggregator.bind(this)
+      "javascript": this.validateJavascriptPostAggregator.bind(this),
+      "thetaSketchEstimate": _.partial(this.validateThetaSketchEstimatePostAggregator.bind(this), 'thetaSketchEstimate')
     };
 
     arithmeticPostAggregatorFns = {'+': null, '-': null, '*': null, '/': null};
@@ -382,6 +381,7 @@ export class DruidQueryCtrl extends QueryCtrl {
           } else {
               this.target.postAggregators.push(this.target.currentPostAggregator);
           }
+        // this.target.postAggregators.push(this.target.currentPostAggregator);
         this.clearCurrentPostAggregator();
         this.addPostAggregatorMode = false;
       }
@@ -603,15 +603,6 @@ export class DruidQueryCtrl extends QueryCtrl {
     }
     return null;
     }
-
-    validateCardinalityAggregator(type, target) {
-      if (!target.currentAggregator.name) {
-        return "Must provide an output name for " + type + " aggregator.";
-      }
-    
-      return null;
-    }
-
     validateSimpleAggregator(type, target) {
       if (!target.currentAggregator.name) {
         return "Must provide an output name for " + type + " aggregator.";
@@ -665,7 +656,7 @@ export class DruidQueryCtrl extends QueryCtrl {
         return "Must provide an output name for " + type + " post aggregator.";
       }
       if (!target.currentPostAggregator.field) {
-        return "Must provide an aggregator name for " + type + " post aggregator.";
+        return "Must provide an quantil aggregator name for " + type + " post aggregator.";
       }
 
       var fraction = target.currentPostAggregator.fraction;
@@ -688,6 +679,16 @@ export class DruidQueryCtrl extends QueryCtrl {
             return "Must provide valid json post aggregator.";
         }
         return null;
+    }
+
+    validateThetaSketchEstimatePostAggregator(type, target){
+      if (!target.currentPostAggregator.name) {
+        return "Must provide an output name for " + type + " post aggregator.";
+      }
+      if (!target.currentPostAggregator.field) {
+        return "Must provide an thetaSketch aggregator name for " + type + " post aggregator.";
+      }
+      return null;
     }
 
     validateArithmeticPostAggregator(target) {
