@@ -41,6 +41,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       "javascript": this.validateJavascriptFilter.bind(this),
       "in": this.validateInFilter.bind(this),
       "json": this.validateJsonFilter.bind(this),
+      "bound": this.validateBoundFilter.bind(this)
     };
     aggregatorValidators = {
       "count": this.validateCountAggregator,
@@ -582,6 +583,19 @@ export class DruidQueryCtrl extends QueryCtrl {
         }
         return null;
     }
+
+    validateBoundFilter(target){
+      if (!target.currentFilter.dimension) {
+        return "Must provide dimension value for bound filter.";
+      }
+
+      if (!target.currentFilter.lower && !target.currentFilter.upper ) {
+        return "Must provide at least one value of lower and upper.";
+      }
+
+      return null;
+    }
+
 
     validateCountAggregator(target) {
       if (!target.currentAggregator.name) {
