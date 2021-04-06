@@ -246,8 +246,13 @@
       <label ng-switch-when="bound" class="gf-form-label">
         {{filter.type}}:&nbsp;
         <label class="gf-form-label" ng-if="filter.lower">{{filter.lower}}&nbsp;</label>
-
-
+        <label class="gf-form-label" ng-if="filter.lower && !filter.lowerStrict"> &le; &nbsp;</label>
+        <label class="gf-form-label" ng-if="filter.lower && filter.lowerStrict"> &lt; &nbsp;</label>
+        {{filter.dimension}}&nbsp;
+        <label class="gf-form-label" ng-if="filter.upper && !filter.upperStrict"> &gt; &nbsp;</label>
+        <label class="gf-form-label" ng-if="filter.upper && filter.upperStrict"> &ge; &nbsp;</label>
+        <label class="gf-form-label" ng-if="filter.upper">{{filter.upper}}&nbsp;</label>
+<!-- TODO -->
         <a ng-click="ctrl.editFilter($index)">
           <i class="fa fa-pencil"></i>
         </a>
@@ -294,14 +299,11 @@
     
     <div class="gf-form" ng-show="ctrl.addFilterMode" ng-switch on="ctrl.target.currentFilter.type">
       <input type="text" ng-switch-when="bound" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentFilter.dimension" placeholder="dimension" bs-typeahead="ctrl.getDimensions" data-min-length=0 ng-blur="ctrl.targetBlur()">
-      <input type="text" ng-switch-when="bound" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentFilter.lower" placeholder="lower" ng-blur="ctrl.targetBlur()" placeholder="lower">
-      <!-- <gf-form-switch ng-show="ctrl.addFilterMode" ng-switch on="ctrl.target.currentFilter.type" class="gf-form" label="lowerStrict" label-class="query-keyword" checked="ctrl.target.currentFilter.lowerStrict">
-      </gf-form-switch> -->
+      <input type="text" ng-switch-when="bound" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentFilter.lower" placeholder="lower" ng-blur="ctrl.targetBlur()">
+      <input type="text" ng-switch-when="bound" class="input-small gf-form-input width-10" spellcheck='false' ng-model="ctrl.target.currentFilter.upper" placeholder="upper" ng-blur="ctrl.targetBlur()">
 
-      <gf-form-switch ng-switch-when="bound" class="gf-form" label="lowerStrict" label-class="query-keyword" checked="ctrl.target.currentFilter.lowerStrict">
-      </gf-form-switch>
-
-
+      <gf-form-switch ng-switch-when="bound" class="gf-form" label="lowerStrict" label-class="query-keyword" checked="ctrl.target.currentFilter.lowerStrict"></gf-form-switch>
+      <gf-form-switch ng-switch-when="bound" class="gf-form" label="upperStrict" label-class="query-keyword" checked="ctrl.target.currentFilter.upperStrict"></gf-form-switch>
     </div>
 
     <gf-form-switch ng-show="ctrl.addFilterMode" ng-switch on="ctrl.target.currentFilter.type" class="gf-form" label="Negate" label-class="query-keyword" checked="ctrl.target.currentFilter.negate">

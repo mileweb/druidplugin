@@ -70,7 +70,8 @@ function (angular, _, dateMath, moment) {
       "javascript": _.partialRight(replaceTemplateValues, ['function']),
       "search": _.partialRight(replaceTemplateValues, []),
       "in": _.partialRight(replaceTemplateValues, ['values']),
-      "json": _.partialRight(replaceTemplateValues, ['value'])
+      "json": _.partialRight(replaceTemplateValues, ['value']),
+      "bound": _.partialRight(replaceTemplateValues, ['lower', 'upper'])
     };
 
     var aggregationTemplateExpanders = {
