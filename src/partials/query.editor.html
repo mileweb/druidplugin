@@ -243,7 +243,7 @@
           <i class="fa fa-remove"></i>
         </a>
       </label>
-      <label ng-switch-when="bound" class="gf-form-label">
+      <label ng-switch-when="bound" class="gf-form-inline">
         <label class="gf-form-inline">{{filter.type}}:&nbsp;</label>
         <label class="gf-form-inline" ng-if="filter.lower">{{filter.lower}}&nbsp;</label>
         <label class="gf-form-inline" ng-if="filter.lower && !filter.lowerStrict"> &le; &nbsp;</label>
@@ -251,14 +251,15 @@
         <label class="gf-form-inline">{{filter.dimension}}&nbsp;</label>
         <label class="gf-form-inline" ng-if="filter.upper && !filter.upperStrict"> &lt; &nbsp;</label>
         <label class="gf-form-inline" ng-if="filter.upper && filter.upperStrict"> &le; &nbsp;</label>
-        <label class="gf-form-inline" ng-if="filter.upper">{{filter.upper}}&nbsp;</label>
+        <label class="gf-form-inline" ng-if="filter.upper">{{filter.upper}}&nbsp;
 <!-- TODO -->
-        <a ng-click="ctrl.editFilter($index)">
-          <i class="fa fa-pencil"></i>
-        </a>
-        <a ng-click="ctrl.removeFilter($index)">
-          <i class="fa fa-remove"></i>
-        </a>
+          <a ng-click="ctrl.editFilter($index)">
+            <i class="fa fa-pencil"></i>
+          </a>
+          <a ng-click="ctrl.removeFilter($index)">
+            <i class="fa fa-remove"></i>
+          </a>
+        </label>
       </label>      
 
       <label class="gf-form-label" ng-if="filter.negate">&nbsp;)</label>
