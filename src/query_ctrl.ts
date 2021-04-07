@@ -41,7 +41,8 @@ export class DruidQueryCtrl extends QueryCtrl {
       "javascript": this.validateJavascriptFilter.bind(this),
       "in": this.validateInFilter.bind(this),
       "json": this.validateJsonFilter.bind(this),
-      "bound": this.validateBoundFilter.bind(this)
+      "bound": this.validateBoundFilter.bind(this),
+      "like": this.validateLikeFilter.bind(this)
     };
     aggregatorValidators = {
       "count": this.validateCountAggregator,
@@ -598,6 +599,17 @@ export class DruidQueryCtrl extends QueryCtrl {
       return null;
     }
 
+    validateLikeFilter(target){
+      if (!target.currentFilter.dimension) {
+        return "Must provide dimension name for like filter.";
+      }
+
+      if (!target.currentFilter.pattern) {
+        return "Must provide pattern for like filter"
+      }
+
+      return null;
+    }
 
     validateCountAggregator(target) {
       if (!target.currentAggregator.name) {
