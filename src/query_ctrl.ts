@@ -585,7 +585,7 @@ export class DruidQueryCtrl extends QueryCtrl {
     }
 
     validateBoundFilter(target){
-      if (!target.currentFilter.metric) {
+      if (!target.currentFilter.dimension) {
         return "Must provide metric value for bound filter.";
       }
 
