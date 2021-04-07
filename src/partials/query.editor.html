@@ -254,12 +254,12 @@
         <label class="gf-form-label gf-form-inline" ng-if="filter.upper">{{filter.upper}}&nbsp; </label> -->
 
         <a >{{filter.type}}:&nbsp;</a>
-        <a  ng-if="filter.lower">{{filter.lower}}</a>
-        <a  ng-if="filter.lower && !filter.lowerStrict"> &lt;</a>
-        <a ng-if="filter.lower && filter.lowerStrict"> &le; </a>
+        <a  ng-if="filter.lower">{{filter.lower}}&nbsp;</a>
+        <a  ng-if="filter.lower && !filter.lowerStrict"> &lt; &nbsp;</a>
+        <a ng-if="filter.lower && filter.lowerStrict"> &le; &nbsp;</a>
         <a >{{filter.dimension}}&nbsp;</a>
-        <a   ng-if="filter.upper && !filter.upperStrict"> &lt; </a>
-        <a  ng-if="filter.upper && filter.upperStrict"> &le; </a>
+        <a   ng-if="filter.upper && !filter.upperStrict"> &lt; &nbsp;</a>
+        <a  ng-if="filter.upper && filter.upperStrict"> &le; &nbsp;</a>
         <a  ng-if="filter.upper">{{filter.upper}}&nbsp;</a>
 
 <!-- TODO -->
