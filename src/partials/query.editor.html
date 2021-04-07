@@ -244,14 +244,24 @@
         </a>
       </label>
       <label ng-switch-when="bound" class="gf-form-inline">
-        <label class="gf-form-label" border: none>{{filter.type}}:&nbsp;</label>
-        <label class="gf-form-label" border: none ng-if="filter.lower">{{filter.lower}}</label>
-        <label class="gf-form-label" border: none ng-if="filter.lower && !filter.lowerStrict"> &lt;</label>
-        <label class="gf-form-label" border: none ng-if="filter.lower && filter.lowerStrict"> &le; </label>
-        <label class="gf-form-label" border: none>{{filter.dimension}}&nbsp;</label>
-        <label class="gf-form-label" border: none ng-if="filter.upper && !filter.upperStrict"> &lt; </label>
+        <!-- <label class="gf-form-label">{{filter.type}}:&nbsp;</label>
+        <label class="gf-form-label" ng-if="filter.lower">{{filter.lower}}</label>
+        <label class="gf-form-label" ng-if="filter.lower && !filter.lowerStrict"> &lt;</label>
+        <label class="gf-form-label" ng-if="filter.lower && filter.lowerStrict"> &le; </label>
+        <label class="gf-form-label">{{filter.dimension}}&nbsp;</label>
+        <label class="gf-form-label"  ng-if="filter.upper && !filter.upperStrict"> &lt; </label>
         <label class="gf-form-label" border: none ng-if="filter.upper && filter.upperStrict"> &le; </label>
-        <label class="gf-form-label gf-form-inline" ng-if="filter.upper">{{filter.upper}}&nbsp;
+        <label class="gf-form-label gf-form-inline" ng-if="filter.upper">{{filter.upper}}&nbsp; </label> -->
+
+        <a >{{filter.type}}:&nbsp;</a>
+        <a  ng-if="filter.lower">{{filter.lower}}</a>
+        <a  ng-if="filter.lower && !filter.lowerStrict"> &lt;</a>
+        <a ng-if="filter.lower && filter.lowerStrict"> &le; </a>
+        <a >{{filter.dimension}}&nbsp;</a>
+        <a   ng-if="filter.upper && !filter.upperStrict"> &lt; </a>
+        <a  ng-if="filter.upper && filter.upperStrict"> &le; </a>
+        <a  ng-if="filter.upper">{{filter.upper}}&nbsp;</a>
+
 <!-- TODO -->
           <a ng-click="ctrl.editFilter($index)">
             <i class="fa fa-pencil"></i>
