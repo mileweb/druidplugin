@@ -255,11 +255,11 @@
 
         <a >{{filter.type}}:&nbsp;</a>
         <a  ng-if="filter.lower">{{filter.lower}}&nbsp;</a>
-        <a  ng-if="filter.lower && !filter.lowerStrict"> &lt; &nbsp;</a>
-        <a ng-if="filter.lower && filter.lowerStrict"> &le; &nbsp;</a>
+        <a  ng-if="filter.lower && !filter.lowerStrict"> &le; &nbsp;</a>
+        <a ng-if="filter.lower && filter.lowerStrict"> &lt; &nbsp;</a>
         <a >{{filter.dimension}}&nbsp;</a>
-        <a   ng-if="filter.upper && !filter.upperStrict"> &lt; &nbsp;</a>
-        <a  ng-if="filter.upper && filter.upperStrict"> &le; &nbsp;</a>
+        <a   ng-if="filter.upper && !filter.upperStrict"> &le; &nbsp;</a>
+        <a  ng-if="filter.upper && filter.upperStrict"> &lt; &nbsp;</a>
         <a  ng-if="filter.upper">{{filter.upper}}&nbsp;</a>
 
         <a ng-click="ctrl.editFilter($index)">
