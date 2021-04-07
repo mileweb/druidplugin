@@ -585,13 +585,15 @@ export class DruidQueryCtrl extends QueryCtrl {
     }
 
     validateBoundFilter(target){
-      if (!target.currentFilter.dimension) {
-        return "Must provide dimension value for bound filter.";
+      if (!target.currentFilter.metric) {
+        return "Must provide metric value for bound filter.";
       }
 
       if (!target.currentFilter.lower && !target.currentFilter.upper ) {
         return "Must provide at least one value of lower and upper.";
       }
+
+      target.currentFilter.ordering = "numeric";
 
       return null;
     }
