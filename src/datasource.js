@@ -502,6 +502,11 @@ function (angular, _, dateMath, moment) {
         if (filter.type === "json") {
           finalFilter = JSON.parse(filter.value);
         }
+        if (filter.type === "search") {
+          let query = JSON.parse(filter.query);
+          finalFilter.query = query
+        }
+
         return finalFilter;
       });
 
