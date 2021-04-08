@@ -42,7 +42,8 @@ export class DruidQueryCtrl extends QueryCtrl {
       "in": this.validateInFilter.bind(this),
       "json": this.validateJsonFilter.bind(this),
       "bound": this.validateBoundFilter.bind(this),
-      "like": this.validateLikeFilter.bind(this)
+      "like": this.validateLikeFilter.bind(this),
+      "search": this.validateSearchFilter.bind(this)
     };
     aggregatorValidators = {
       "count": this.validateCountAggregator,
@@ -606,6 +607,18 @@ export class DruidQueryCtrl extends QueryCtrl {
 
       if (!target.currentFilter.pattern) {
         return "Must provide pattern for like filter"
+      }
+
+      return null;
+    }
+
+    validateSearchFilter(target){
+      if (!target.currentFilter.dimension) {
+        return "Must provide dimension name for search filter.";
+      }
+
+      if (!target.currentFilter.query) {
+        return "Must provide query for search filter"
       }
 
       return null;
