@@ -595,6 +595,18 @@ export class DruidQueryCtrl extends QueryCtrl {
         return "Must provide at least one value of lower and upper.";
       }
 
+      if(target.currentFilter.lower && !this.isNumeric(target.currentFilter.lower)){
+        return "Type of lower must be numeric type"
+      }
+
+      if(target.currentFilter.upper && !this.isNumeric(target.currentFilter.upper)){
+        return "Type of upper must be numeric type"
+      }
+
+      if(target.currentFilter.lower && target.currentFilter.upper && Number(target.currentFilter.lower) > Number(target.currentFilter.upper)){
+        return "The lower value must be less than or equal to the upper value"
+      }      
+
       target.currentFilter.ordering = "numeric";
 
       return null;
@@ -823,4 +835,10 @@ export class DruidQueryCtrl extends QueryCtrl {
 
     return errs;
   }
+
+  isNumeric(str: String) {
+    var numericStr = Number(str);
+    return !isNaN(numericStr);
+  }
+
 }
