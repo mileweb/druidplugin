@@ -192,15 +192,13 @@
 
   <div class="gf-form-inline">
     <div class="gf-form">
+      <!--TODO  xuzh1-->
       <label class="gf-form-label query-keyword width-9">
         Filters
-      <!--TODO  xuzh1-->
-        <label class="gf-form-label" bs-tooltip="ctrl.target.errors.currentFilter" style="color: rgb(229, 189, 28)" ng-show="ctrl.target.errors.currentFilter">
+        <a class="gf-form-label" bs-tooltip="ctrl.target.errors.currentFilter" style="color: rgb(229, 189, 28)" ng-show="ctrl.target.errors.currentFilter">
           <i class="fa fa-warning"></i>
-        </label>        
+        </a>        
       </label>
-
-
     </div>
 
     <div class="gf-form" ng-repeat="filter in ctrl.target.filters track by $index" ng-switch on="filter.type">
