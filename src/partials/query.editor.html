@@ -88,9 +88,9 @@
     <div ng-switch-when="groupBy" class="gf-form">
       <label class="gf-form-label query-keyword width-9">
         Dimensions
-        <info-popover mode="right-normal">
+        <!-- <info-popover mode="right-normal">
           (empty = *)
-        </info-popover>
+        </info-popover> -->
       </label>
     </div>
     <div class="gf-form" ng-switch-when="groupBy" ng-repeat="dim in ctrl.target.selectDimensions track by $index">
@@ -194,7 +194,9 @@
     <div class="gf-form">
       <label class="gf-form-label query-keyword width-9">
         Filters
-        <label class="gf-form-label" bs-tooltip="ctrl.errors.currentFilter" style="color: rgb(229, 189, 28)" ng-show="ctrl.errors.currentFilter">
+
+        <!--TODO  xuzh1-->
+        <label class="gf-form-label" bs-tooltip="ctrl.target.errors.currentFilter" style="color: rgb(229, 189, 28)" ng-show="ctrl.target.errors.currentFilter">
           <i class="fa fa-warning"></i>
         </label>
       </label>
