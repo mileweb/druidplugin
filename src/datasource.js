@@ -70,7 +70,10 @@ function (angular, _, dateMath, moment) {
       "javascript": _.partialRight(replaceTemplateValues, ['function']),
       "search": _.partialRight(replaceTemplateValues, []),
       "in": _.partialRight(replaceTemplateValues, ['values']),
-      "json": _.partialRight(replaceTemplateValues, ['value'])
+      "json": _.partialRight(replaceTemplateValues, ['value']),
+      "bound": _.partialRight(replaceTemplateValues, ['lower', 'upper']),
+      "like": _.partialRight(replaceTemplateValues, ['pattern']),
+      "search": _.partialRight(replaceTemplateValues, ['query'])
     };
 
     var aggregationTemplateExpanders = {
@@ -499,6 +502,11 @@ function (angular, _, dateMath, moment) {
         if (filter.type === "json") {
           finalFilter = JSON.parse(filter.value);
         }
+        if (filter.type === "search") {
+          let query = JSON.parse(filter.query);
+          finalFilter.query = query
+        }
+
         return finalFilter;
       });
 

@@ -41,6 +41,9 @@ export class DruidQueryCtrl extends QueryCtrl {
       "javascript": this.validateJavascriptFilter.bind(this),
       "in": this.validateInFilter.bind(this),
       "json": this.validateJsonFilter.bind(this),
+      "bound": this.validateBoundFilter.bind(this),
+      "like": this.validateLikeFilter.bind(this),
+      "search": this.validateSearchFilter.bind(this)
     };
     aggregatorValidators = {
       "count": this.validateCountAggregator,
@@ -583,6 +586,56 @@ export class DruidQueryCtrl extends QueryCtrl {
         return null;
     }
 
+    validateBoundFilter(target){
+      if (!target.currentFilter.dimension) {
+        return "Must provide metric value for bound filter.";
+      }
+
+      if (!target.currentFilter.lower && !target.currentFilter.upper ) {
+        return "Must provide at least one value of lower and upper.";
+      }
+
+      if(target.currentFilter.lower && !this.isNumeric(target.currentFilter.lower)){
+        return "Type of lower must be numeric type"
+      }
+
+      if(target.currentFilter.upper && !this.isNumeric(target.currentFilter.upper)){
+        return "Type of upper must be numeric type"
+      }
+
+      if(target.currentFilter.lower && target.currentFilter.upper && Number(target.currentFilter.lower) > Number(target.currentFilter.upper)){
+        return "The lower value must be less than or equal to the upper value"
+      }      
+
+      target.currentFilter.ordering = "numeric";
+
+      return null;
+    }
+
+    validateLikeFilter(target){
+      if (!target.currentFilter.dimension) {
+        return "Must provide dimension name for like filter.";
+      }
+
+      if (!target.currentFilter.pattern) {
+        return "Must provide pattern for like filter"
+      }
+
+      return null;
+    }
+
+    validateSearchFilter(target){
+      if (!target.currentFilter.dimension) {
+        return "Must provide dimension name for search filter.";
+      }
+
+      if (!target.currentFilter.query) {
+        return "Must provide query for search filter"
+      }
+
+      return null;
+    }
+
     validateCountAggregator(target) {
       if (!target.currentAggregator.name) {
         return "Must provide an output name for count aggregator.";
@@ -782,4 +835,10 @@ export class DruidQueryCtrl extends QueryCtrl {
 
     return errs;
   }
+
+  isNumeric(str: String) {
+    var numericStr = Number(str);
+    return !isNaN(numericStr);
+  }
+
 }
