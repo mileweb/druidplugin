@@ -153,7 +153,21 @@ function (angular, _, dateMath, moment) {
       var dataSource = this;
       var from = dateToMoment(options.range.from, false);
       var to = dateToMoment(options.range.to, true);
-      var timeZone = options.timezone;
+
+      var timeZone = dataSource.periodGranularity;
+
+      if(timeZone === "dashboard") {
+        if(options.timezone === "browser") {
+            timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+         }
+        else if(options.timezone != "") {
+            timeZone = options.timezone
+         }
+        else {
+            console.log("grafana not sending timezone")
+         }
+       }
+      }
 
 
       console.log("Do query");
