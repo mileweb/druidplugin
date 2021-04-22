@@ -197,13 +197,6 @@ function (angular, _, dateMath, moment) {
         if(granularity==='five_minute'){
             granularity = {"type": "period", "period": "PT5M"}
         }
-        /** 
-        if(dataSource.periodGranularity!=""){
-            if(granularity==='day'){
-                granularity = {"type": "period", "period": "P1D", "timeZone": dataSource.periodGranularity}
-            }
-        }
-        */
 
         if(timeZone!=""){
           if(granularity==='day'){
