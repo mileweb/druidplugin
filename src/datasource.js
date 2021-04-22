@@ -1,4 +1,4 @@
-/*
+(function(System, SystemJS){/*
  * Copyright 2014-2015 Quantiply Corporation. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -395,7 +395,7 @@ function (angular, _, dateMath, moment) {
         "intervals": intervals
       };
 
-      query.filter = isTopNQueryForVar ? null : buildFilterTree(filters, scopedVars);
+      query.filter = isTopNQueryForVar ? filters : buildFilterTree(filters, scopedVars);
 
       return this._druidQuery(query);
     };
@@ -458,7 +458,7 @@ function (angular, _, dateMath, moment) {
                 return metrics;
             });
         } else {
-        return this._topNQueryForVar(params[0], params[1]);
+          return this._topNQueryForVar(params[0], params[1], params.slice(2));
       }
     }
       
@@ -882,7 +882,7 @@ function (angular, _, dateMath, moment) {
     /** It is used to get tag values for adhoc filters and variables.
      *  Add by xuzh1 on 2020/08/14   
      */    
-    this._topNQueryForVar = function(datasource, dimension){
+    this._topNQueryForVar = function(datasource, dimension, anotherParam){
       var range = timeSrv.timeRange();
       var from = moment(Number(range.from.valueOf().toString()));
       var to = moment(Number(range.to.valueOf().toString()));
@@ -895,8 +895,32 @@ function (angular, _, dateMath, moment) {
           "druidMetric": metric,
           "aggregators": [{"type": "count", "name": metric}],
           "threshold": 250,
-          "isTopNQueryForVar": true
+          "isTopNQueryForVar": true,
+          "filters": {
+            "type": "and",
+            "fields": []
+          }          
       };
+
+      for (var ii=0;ii<anotherParam.length;ii++) {
+        var v = anotherParam[ii];
+        if (/^\d+$/.test(v)) {
+          target.threshold=v;
+          continue;
+        }
+        var condition = v.split("=");
+        if (condition.length != 2) {
+          continue;
+        }
+        target.filters.fields.push({
+          "type": "selector",
+          "dimension": condition[0],
+          "value": condition[1]
+        })
+    }
+    if (target.filters.fields.length == 0) {
+      target.filters = null;
+    }
 
       var promise = this._doQuery(from, to, 'all', target);
       return promise.then(results => {
@@ -913,3 +937,5 @@ function (angular, _, dateMath, moment) {
     DruidDatasource: DruidDatasource
   };
 });
+
+})(System, System);
