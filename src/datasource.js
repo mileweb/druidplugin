@@ -166,7 +166,6 @@ function (angular, _, dateMath, moment) {
         else {
             console.log("grafana not sending timezone")
          }
-       }
       }
 
 
