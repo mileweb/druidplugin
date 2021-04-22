@@ -153,7 +153,7 @@ function (angular, _, dateMath, moment) {
       var dataSource = this;
       var from = dateToMoment(options.range.from, false);
       var to = dateToMoment(options.range.to, true);
-      var timeZone = options.timeZone;
+      var timeZone = options.timezone;
 
 
       console.log("Do query");
@@ -197,7 +197,7 @@ function (angular, _, dateMath, moment) {
               granularity = {"type": "period", "period": "P1D", "timeZone": timeZone}
           }
         }        
-        
+
         return dataSource._doQuery(roundedFrom, to, granularity, target, options.scopedVars);
       });
 
