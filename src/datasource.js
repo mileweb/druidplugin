@@ -912,10 +912,12 @@ function (angular, _, dateMath, moment) {
         if (condition.length != 2) {
           continue;
         }
+
+
         target.filters.fields.push({
           "type": "in",
           "dimension": condition[0],
-          "value": condition[1]
+          "values": condition[1].replace(/[{}]/g, "").split(',')
         })
     }
     if (target.filters.fields.length == 0) {
