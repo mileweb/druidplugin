@@ -154,6 +154,21 @@ function (angular, _, dateMath, moment) {
       var from = dateToMoment(options.range.from, false);
       var to = dateToMoment(options.range.to, true);
 
+      var timeZone = dataSource.periodGranularity;
+
+      if(timeZone === "dashboard") {
+        if(options.timezone === "browser") {
+            timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+         }
+        else if(options.timezone != "") {
+            timeZone = options.timezone
+         }
+        else {
+            console.log("grafana not sending timezone")
+         }
+      }
+
+
       console.log("Do query");
       console.log(options);
 
@@ -182,11 +197,13 @@ function (angular, _, dateMath, moment) {
         if(granularity==='five_minute'){
             granularity = {"type": "period", "period": "PT5M"}
         }
-        if(dataSource.periodGranularity!=""){
-            if(granularity==='day'){
-                granularity = {"type": "period", "period": "P1D", "timeZone": dataSource.periodGranularity}
-            }
-        }
+
+        if(timeZone!=""){
+          if(granularity==='day'){
+              granularity = {"type": "period", "period": "P1D", "timeZone": timeZone}
+          }
+        }        
+
         return dataSource._doQuery(roundedFrom, to, granularity, target, options.scopedVars);
       });
 
