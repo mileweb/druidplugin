@@ -23,11 +23,14 @@ function (angular, _, dateMath, moment) {
   'use strict';
 
   /** @ngInject */
-  function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv) {
+  function DruidDatasource(instanceSettings, $q, backendSrv, templateSrv, timeSrv) {
+
     this.type = 'druid-datasource';
     this.url = instanceSettings.url;
     this.name = instanceSettings.name;
     this.basicAuth = instanceSettings.basicAuth;
+    this.adhocFilterDS = instanceSettings.jsonData.adhocFilterDS;
+    this.dsRegex = instanceSettings.jsonData.dsRegex;
     instanceSettings.jsonData = instanceSettings.jsonData || {};
     this.supportMetrics = true;
     this.periodGranularity = instanceSettings.jsonData.periodGranularity;
@@ -50,6 +53,7 @@ function (angular, _, dateMath, moment) {
     var GRANULARITIES = [
       ['second', moment.duration(1, 'second')],
       ['minute', moment.duration(1, 'minute')],
+      ['five_minute', moment.duration(5, 'minute')],
       ['fifteen_minute', moment.duration(15, 'minute')],
       ['thirty_minute', moment.duration(30, 'minute')],
       ['hour', moment.duration(1, 'hour')],
@@ -66,17 +70,20 @@ function (angular, _, dateMath, moment) {
       "javascript": _.partialRight(replaceTemplateValues, ['function']),
       "search": _.partialRight(replaceTemplateValues, []),
       "in": _.partialRight(replaceTemplateValues, ['values']),
-      "json": _.partialRight(replaceTemplateValues, ['value'])
+      "json": _.partialRight(replaceTemplateValues, ['value']),
+      "bound": _.partialRight(replaceTemplateValues, ['lower', 'upper']),
+      "like": _.partialRight(replaceTemplateValues, ['pattern']),
+      "search": _.partialRight(replaceTemplateValues, ['query'])
     };
 
     var aggregationTemplateExpanders = {
       "count": _.partialRight(replaceTemplateValues, ['name']),
-      "cardinality": _.partialRight(replaceTemplateValues, ['fieldNames']),
       "longSum": _.partialRight(replaceTemplateValues, ['fieldName']),
       "doubleSum": _.partialRight(replaceTemplateValues, ['fieldName']),
-      "approxHistogramFold": _.partialRight(replaceTemplateValues, ['fieldName']),
-      "hyperUnique": _.partialRight(replaceTemplateValues, ['fieldName']),
-      "json": _.partialRight(replaceTemplateValues, ['value']),
+      "doubleMax": _.partialRight(replaceTemplateValues, ['fieldName']),
+      "doubleMin": _.partialRight(replaceTemplateValues, ['fieldName']),
+      "quantilesDoublesSketch": _.partialRight(replaceTemplateValues, ['fieldName']),
+      "javascript": _.partialRight(replaceTemplateValues, ['value']),
       "thetaSketch": _.partialRight(replaceTemplateValues, ['fieldName'])
     };
 
@@ -88,9 +95,14 @@ function (angular, _, dateMath, moment) {
 
     //Get list of available datasources
     this.getDataSources = function() {
+      // var regex = new RegExp(this.dsRegex, 'i' ); 
+      var regex = eval(this.dsRegex); 
       return this._get('/druid/v2/datasources').then(function (response) {
-        return response.data;
+        // var datasources = response.data;
+        var results =  regex ? _.filter(response.data, datasource => {return regex.test(datasource)}) : response.data;
+        return results;
       });
+
     };
 
     this.getDimensionsAndMetrics = function (datasource) {
@@ -142,11 +154,26 @@ function (angular, _, dateMath, moment) {
       var from = dateToMoment(options.range.from, false);
       var to = dateToMoment(options.range.to, true);
 
+      var timeZone = dataSource.periodGranularity;
+
+      if(timeZone === "dashboard") {
+        if(options.timezone === "browser") {
+            timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+         }
+        else if(options.timezone != "") {
+            timeZone = options.timezone
+         }
+        else {
+            console.log("grafana not sending timezone")
+         }
+      }
+
+
       console.log("Do query");
       console.log(options);
 
       var promises = options.targets.map(function (target) {
-        if (target.hide===true || _.isEmpty(target.druidDS) || (_.isEmpty(target.aggregators) && target.queryType !== "select")) {
+        if (target.hide===true || _.isEmpty(target.druidDS) || (_.isEmpty(target.aggregators) && target.queryType !== "scan")) {
           console.log("target.hide: " + target.hide + ", target.druidDS: " + target.druidDS + ", target.aggregators: " + target.aggregators);
           var d = $q.defer();
           d.resolve([]);
@@ -158,12 +185,25 @@ function (angular, _, dateMath, moment) {
         var granularity = target.shouldOverrideGranularity? templateSrv.replace(target.customGranularity) : computeGranularity(from, to, maxDataPoints);
         //Round up to start of an interval
         //Width of bar chars in Grafana is determined by size of the smallest interval
-        var roundedFrom = granularity === "all" ? from : roundUpStartTime(from, granularity);
-        if(dataSource.periodGranularity!=""){
-            if(granularity==='day'){
-                granularity = {"type": "period", "period": "P1D", "timeZone": dataSource.periodGranularity}
-            }
+        var roundedFrom = from;
+
+          var firstChar = granularity.charAt(0);
+          if (firstChar >= '1' && firstChar <= '9') {
+              granularity = {"type": "period", "period": "PT" + granularity.toUpperCase()}
+          } else {
+              roundedFrom = granularity === "all" ? from : roundUpStartTime(from, granularity);
+          }
+
+        if(granularity==='five_minute'){
+            granularity = {"type": "period", "period": "PT5M"}
         }
+
+        if(timeZone!=""){
+          if(granularity==='day'){
+              granularity = {"type": "period", "period": "P1D", "timeZone": timeZone}
+          }
+        }        
+
         return dataSource._doQuery(roundedFrom, to, granularity, target, options.scopedVars);
       });
 
@@ -175,19 +215,16 @@ function (angular, _, dateMath, moment) {
     this._doQuery = function (from, to, granularity, target, scopedVars) {
 
       function splitCardinalityFields(aggregator) {
-
-        if(aggregator.type === 'cardinality' && typeof aggregator.fieldNames === 'string') {
-           aggregator.fieldNames = aggregator.fieldNames.split(',')
-        }
-
         //adds support for aggregation template variable
         if(aggregator.type!='count' ){
            aggregator=aggregationTemplateExpanders[aggregator.type](aggregator, scopedVars);
         }
 
-        //adds json type aggregator
-        if(aggregator.type === 'json'){
-           aggregator= splitCardinalityFields(JSON.parse(aggregator.value))
+        //adds javascript type aggregator
+        if(aggregator.type === 'javascript'){
+          var jsAggHidden = aggregator.hidden;
+          aggregator= JSON.parse(aggregator.value);
+          aggregator.hidden = jsAggHidden;
         }
 
         return aggregator;
@@ -195,45 +232,87 @@ function (angular, _, dateMath, moment) {
 
       var datasource = target.druidDS;
       var filters = target.filters;
-      var aggregators = target.aggregators.map(splitCardinalityFields);
-      var postAggregators = target.postAggregators;
+      var aggregators = target.aggregators && target.aggregators.map(splitCardinalityFields);
+      var postAggregators = _.map(target.postAggregators, (postAgg) => {
+        if(postAgg.type === "quantilesDoublesSketchToQuantile"){
+
+          postAgg.field = {
+            "type": "fieldAccess",
+            "fieldName": postAgg.field
+          }
+        }else if(postAgg.type === "thetaSketchEstimate"){
+
+          postAgg.field = {
+            "type": "fieldAccess",
+            // "name": postAgg.field,
+            "fieldName": postAgg.field
+          }
+
+        }
+        return postAgg;
+      });
       var groupBy = _.map(target.groupBy, (e) => { return templateSrv.replace(e) });
       var limitSpec = null;
       var metricNames = getMetricNames(aggregators, postAggregators);
       var intervals = getQueryIntervals(from, to);
       var promise = null;
-
-      var selectMetrics = target.selectMetrics;
       var selectDimensions = target.selectDimensions;
-      var selectThreshold = target.selectThreshold;
-      if(!selectThreshold) {
-        selectThreshold = 5;
-      }
+      
+      var scanColumns = target.scanColumns;
+
+
+        var postAggs = [];
+        if (postAggregators && postAggregators.length) {
+            var len = postAggregators.length;
+            for (var i = 0; i < len; i++) {
+                var agg = _.clone(postAggregators[i]);
+                if (agg['function']) {
+                    agg['function'] = templateSrv.replace(agg['function'])
+                    postAggs.push(agg);
+                } else {
+                   postAggs.push(agg);
+                }
+            }
+        }
 
       if (target.queryType === 'topN') {
-        var threshold = target.limit;
+        var threshold = target.threshold;
         var metric = target.druidMetric;
         var dimension = templateSrv.replace(target.dimension);
-        promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggregators, threshold, metric, dimension, scopedVars)
+        var isTopNQueryForVar = target.isTopNQueryForVar
+
+        if (dimension && dimension.indexOf("{") == 0) {
+            dimension = JSON.parse(dimension);
+        }
+
+        promise = this._topNQuery(datasource, intervals, granularity, filters, aggregators, postAggs, threshold, metric, dimension, scopedVars, isTopNQueryForVar)
           .then(function(response) {
-            return convertTopNData(response.data, dimension, metric);
+            var seriesList = convertTopNData(response.data, dimension['outputName'] || dimension, metricNames);
+            return seriesList;
           });
       }
       else if (target.queryType === 'groupBy') {
+          groupBy = _.map(selectDimensions, function(one) {
+              if (one['outputName']) {
+                    return one['outputName'];
+              }
+              return one;
+          });
         limitSpec = getLimitSpec(target.limit, target.orderBy);
-        promise = this._groupByQuery(datasource, intervals, granularity, filters, aggregators, postAggregators, groupBy, limitSpec, scopedVars)
+        promise = this._groupByQuery(datasource, intervals, granularity, filters, aggregators, postAggs, selectDimensions, limitSpec, scopedVars)
           .then(function(response) {
             return convertGroupByData(response.data, groupBy, metricNames);
           });
       }
-      else if (target.queryType === 'select') {
-        promise = this._selectQuery(datasource, intervals, granularity, selectDimensions, selectMetrics, filters, selectThreshold, scopedVars);
-        return promise.then(function(response) {
-          return convertSelectData(response.data);
+      else if(target.queryType === 'scan'){
+        scanColumns.unshift("__time");
+        promise = this._scanQuery(datasource, intervals, scanColumns, target.limit, filters, scopedVars);
+        return promise.then(function(response){
+            return convertScanData(response.data);
         });
       }
       else {
-        promise = this._timeSeriesQuery(datasource, intervals, granularity, filters, aggregators, postAggregators, scopedVars)
+        promise = this._timeSeriesQuery(datasource, intervals, granularity, filters, aggregators, postAggs, scopedVars)
           .then(function(response) {
             return convertTimeSeriesData(response.data, metricNames);
           });
@@ -265,21 +344,24 @@ function (angular, _, dateMath, moment) {
       });
     };
 
-    this._selectQuery = function (datasource, intervals, granularity, dimension, metric, filters, selectThreshold, scopedVars) {
-      var query = {
-        "queryType": "select",
-        "dataSource": datasource,
-        "granularity": granularity,
-        "pagingSpec": {"pagingIdentifiers": {}, "threshold": selectThreshold},
-        "dimensions": dimension,
-        "metrics": metric,
-        "intervals": intervals
-      };
-
-      if (filters && filters.length > 0) {
-        query.filter = buildFilterTree(filters, scopedVars);
+    this._scanQuery = function (datasource, intervals, columns, limit, filters, scopedVars){
+      if(isNaN(limit)){
+        limit = 1000;
+      }else if(limit > 2000){
+        limit = 2000;
       }
 
+      var query = {
+        "queryType": "scan",
+        "dataSource": datasource,
+        "resultFormat": "compactedList",
+        "columns": columns,
+        "limit": limit,
+        "order": "descending",
+        "intervals": intervals
+      }
+
+      query.filter = buildFilterTree(filters, scopedVars);
       return this._druidQuery(query);
     };
 
@@ -293,15 +375,13 @@ function (angular, _, dateMath, moment) {
         "intervals": intervals
       };
 
-      if (filters && filters.length > 0) {
-        query.filter = buildFilterTree(filters, scopedVars);
-      }
+      query.filter = buildFilterTree(filters, scopedVars);
 
       return this._druidQuery(query);
     };
 
     this._topNQuery = function (datasource, intervals, granularity, filters, aggregators, postAggregators,
-    threshold, metric, dimension, scopedVars) {
+    threshold, metric, dimension, scopedVars, isTopNQueryForVar) {
       var query = {
         "queryType": "topN",
         "dataSource": datasource,
@@ -315,9 +395,7 @@ function (angular, _, dateMath, moment) {
         "intervals": intervals
       };
 
-      if (filters && filters.length > 0) {
-        query.filter = buildFilterTree(filters, scopedVars);
-      }
+      query.filter = isTopNQueryForVar ? null : buildFilterTree(filters, scopedVars);
 
       return this._druidQuery(query);
     };
@@ -335,9 +413,7 @@ function (angular, _, dateMath, moment) {
         "limitSpec": limitSpec
       };
 
-      if (filters && filters.length > 0) {
-        query.filter = buildFilterTree(filters, scopedVars);
-      }
+      query.filter = buildFilterTree(filters, scopedVars);
 
       return this._druidQuery(query);
     };
@@ -353,6 +429,39 @@ function (angular, _, dateMath, moment) {
       return backendSrv.datasourceRequest(options);
     };
 
+      /** Variable query action.
+       *  It is invoked by /public/app/features/templating/query_variable.getOptions() lie in grafana server endpoint.
+       *  For more details refer to https://grafana.com/docs/grafana/latest/packages_api/data/datasourceapi/#metricfindquery-method
+       */          
+      this.metricFindQuery = function(query) {
+        var range = angular.element('grafana-app').injector().get('timeSrv').timeRangeForUrl();
+        var from = dateToMoment(range.from, false);
+        var to = dateToMoment(range.to, true);
+        var intervals = getQueryIntervals(from, to);
+
+        var params = query.split(":");
+        for(var i =0; i < params.length; i++) {
+            params[i] = templateSrv.replace(params[i]);
+        }
+        if (params[1] == 'dimensions') {
+            return this._get('/druid/v2/datasources/' + params[0]).then(function (response) {
+                var dimensions = _.map(response.data.dimensions, function (e) {
+                    return { "text": e };
+                });
+                return dimensions;
+            });
+        } else if (params[1] == 'metrics') {
+            return this._get('/druid/v2/datasources/' + params[0]).then(function (response) {
+                var metrics = _.map(response.data.metrics, function (e) {
+                    return { "text": e };
+                });
+                return metrics;
+            });
+        } else {
+        return this._topNQueryForVar(params[0], params[1]);
+      }
+    }
+      
     function getLimitSpec(limitNum, orderBy) {
       return {
         "type": "default",
@@ -365,8 +474,42 @@ function (angular, _, dateMath, moment) {
 
     function buildFilterTree(filters, scopedVars) {
       //Do template variable replacement
-      var replacedFilters = filters.map(function (filter) {
+        var adhocFilters = getAdhocFilters();
+        if ((!filters || filters.length == 0) && (!adhocFilters || adhocFilters.length == 0)) {
+            return null;
+        }
+        console.log(adhocFilters);
+        var targetFilters = [];
+        if (filters) {
+            filters.forEach(function(one) {
+              targetFilters.push(one);
+            });
+        }
+        for (var n = 0; n < adhocFilters.length; n++) {
+            var f = adhocFilters[n];
+            var filter = {};
+            filter['type'] = 'selector';
+            filter['dimension'] = f['key'];
+            filter['value'] = f['value'];
+            if (f['operator'] == '!=') {
+                filter['negate'] = true;
+            }
+            targetFilters.push(filter);
+        }
+        
+      var replacedFilters = targetFilters.map(function (filter) {
         return filterTemplateExpanders[filter.type](filter, scopedVars);
+      })
+      .filter(function(filter){
+        //delete filter whose values is any value.
+        if(filter.type === "in"){
+          return !(filter.values.length === 1 && filter.values[0] === "*");
+        }else if(filter.type === "selector"){
+          return !(filter.value === "*");
+        }else {
+          return true;
+        }
+
       })
       .map(function (filter) {
         var finalFilter = _.omit(filter, 'negate');
@@ -376,6 +519,11 @@ function (angular, _, dateMath, moment) {
         if (filter.type === "json") {
           finalFilter = JSON.parse(filter.value);
         }
+        if (filter.type === "search") {
+          let query = JSON.parse(filter.query);
+          finalFilter.query = query
+        }
+
         return finalFilter;
       });
 
@@ -422,9 +570,13 @@ function (angular, _, dateMath, moment) {
 
     function getMetricNames(aggregators, postAggregators) {
       var displayAggs = _.filter(aggregators, function (agg) {
-        return agg.type !== 'approxHistogramFold' && agg.hidden != true;
+        return agg.hidden != true;
       });
-      return _.union(_.map(displayAggs, 'name'), _.map(postAggregators, 'name'));
+
+      var displayPostAggs = _.filter(postAggregators, function (postAgg) {
+        return postAgg.hidden != true;
+      });
+      return _.union(_.map(displayAggs, 'name'), _.map(displayPostAggs, 'name'));
     }
 
     function formatTimestamp(ts) {
@@ -452,22 +604,22 @@ function (angular, _, dateMath, moment) {
       .join("-");
     }
 
-    function convertTopNData(md, dimension, metric) {
+    function convertTopNData(md, dimension, metrics) {
       /*
         Druid topN results look like this:
         [
           {
             "timestamp": "ts1",
             "result": [
-              {"<dim>": d1, "<metric>": mv1},
-              {"<dim>": d2, "<metric>": mv2}
+              {"<dim>": d1, "<metric1>": mv1_1, "<metric2>": mv2_1, ···},
+              {"<dim>": d2, "<metric1>": mv1_2, "<metric2>": mv2_2, ···}
             ]
           },
           {
             "timestamp": "ts2",
             "result": [
-              {"<dim>": d1, "<metric>": mv3},
-              {"<dim>": d2, "<metric>": mv4}
+              {"<dim>": d1, "<metric1>": mv1_3, "<metric2>": mv2_3, ···},
+              {"<dim>": d2, "<metric1>": mv1_4, "<metric2>": mv2_4, ···}
             ]
           },
           ...
@@ -496,14 +648,21 @@ function (angular, _, dateMath, moment) {
         dValsMissing.forEach(function (dVal) {
           var nullPoint = {};
           nullPoint[dimension] = dVal;
-          nullPoint[metric] = null;
+          metrics.forEach(function(metric){
+            nullPoint[metric] = null;
+          });
           tsItem.result.push(nullPoint);
         });
         return tsItem;
       });
 
       //Re-index the results by dimension value instead of time interval
-      var mergedData = md.map(function (item) {
+      var mergedData = {};
+      var flag = metrics.length;
+
+      metrics.forEach(function(metric){
+
+        var partMergedData = md.map(function (item) {
         /*
           This first map() transforms this into a list of objects
           where the keys are dimension values
@@ -519,13 +678,18 @@ function (angular, _, dateMath, moment) {
               },
               ...
             ]
-        */
-        var timestamp = formatTimestamp(item.timestamp);
-        var keys = _.map(item.result, dimension);
-        var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
-        return _.zipObject(keys, vals);
-      })
-      .reduce(function (prev, curr) {
+        */          
+          var timestamp = formatTimestamp(item.timestamp);
+          var keys = _.map(item.result, dimension);
+
+          if(flag >= 2){
+            keys = keys.map(function(key) {return key + ":" + metric});
+          }
+          
+          var vals = _.map(item.result, metric).map(function (val) { return [val, timestamp];});
+          return _.zipObject(keys, vals);
+        })
+        .reduce(function (prev, curr) {
         /*
           Reduce() collapses all of the mapped objects into a single
           object.  The keys are dimension values
@@ -536,14 +700,18 @@ function (angular, _, dateMath, moment) {
           the _.assign() callback will get called for every new val
           that we add to the final object.
         */
-        return _.assignWith(prev, curr, function (pVal, cVal) {
-          if (pVal) {
-            pVal.push(cVal);
-            return pVal;
-          }
-          return [cVal];
-        });
-      }, {});
+          return _.assignWith(prev, curr, function (pVal, cVal) {
+            if (pVal) {
+              pVal.push(cVal);
+              return pVal;
+            }
+            return [cVal];
+          });
+        }, {});
+
+        _.assign(mergedData, partMergedData);
+
+      });
 
       //Convert object keyed by dimension values into an array
       //of objects {target: <dimVal>, datapoints: <metric time series>}
@@ -605,27 +773,25 @@ function (angular, _, dateMath, moment) {
       });
     }
 
-    function convertSelectData(data){
-      var resultList = _.map(data, "result");
-      var eventsList = _.map(resultList, "events");
-      var eventList = _.flatten(eventsList);
-      var result = {};
-      for(var i = 0; i < eventList.length; i++){
-        var event = eventList[i].event;
-        var timestamp = event.timestamp;
-        if(_.isEmpty(timestamp)) {
-          continue;
-        }
-        for(var key in event) {
-          if(key !== "timestamp") {
-            if(!result[key]){
-              result[key] = {"target":key, "datapoints":[]};
-            }
-            result[key].datapoints.push([event[key], timestamp]);
-          }
-        }
+    function convertScanData(data){
+      var results = [];
+      for(var i = 0; i < data.length; i++){
+        results[i] = {"columns": [], "rows": [], "type": "table"};
+    
+        var columns = data[i].columns.map( columnName => {return {"text": columnName}});
+        columns.splice(0, 1, {
+            "text": "Time",
+            "type": "time",
+            "sort": true,
+            "desc": true
+          });
+    
+        results[i].columns =columns;
+    
+        results[i].rows = data[i].events;
       }
-      return _.values(result);
+
+      return results;
     }
 
     function dateToMoment(date, roundUp) {
@@ -663,6 +829,82 @@ function (angular, _, dateMath, moment) {
       }
       console.log("Rounding up start time from " + from.format() + " to " + rounded.format() + " for granularity [" + granularity + "]");
       return rounded;
+    }
+
+      // add by wujj
+      function getAdhocFilters() {
+        let filters = [];
+        var datasourceName = instanceSettings.name;
+        if (templateSrv.variables) {
+          for (let i = 0; i < templateSrv.variables.length; i++) {
+            const variable = templateSrv.variables[i];
+            if (variable.type !== 'adhoc') {
+              continue;
+            }
+    
+            // null is the "default" datasource
+            if (variable.datasource === null || variable.datasource === datasourceName) {
+              filters = filters.concat(variable.filters);
+            } else if (variable.datasource.indexOf('$') === 0) {
+              if (this.replace(variable.datasource) === datasourceName) {
+                filters = filters.concat(variable.filters);
+              }
+            }
+          }
+        }
+    
+        return filters;
+      }
+
+    /** Get tag keys for adhoc filters. 
+     *  It is invoked by /public/app/features/dashboard/components/AdHocFilters/AdHocFiltersCtr.getOptions() lie in grafana server endpoint.
+     *  For more details refer to https://grafana.com/docs/grafana/latest/packages_api/data/datasourceapi/#gettagkeys-method 
+     *  Add by xuzh1 on 2020/08/14   
+     */
+    this.getTagKeys = function(){
+      return this.getDimensionsAndMetrics(this.adhocFilterDS).then(result => {
+        var fields = [].concat(result.metrics).concat(result.dimensions);
+        return _.map(fields, fieldName => {return {"text": fieldName}});
+      });
+    }
+
+
+    /** Get tag values for adhoc filters. 
+     *  It is invoked by /public/app/features/dashboard/components/AdHocFilters/AdHocFiltersCtr.getOptions() lie in grafana server endpoint.
+     *  For more details refer to https://grafana.com/docs/grafana/latest/packages_api/data/datasourceapi/#gettagvalues-method
+     *  Add by xuzh1 on 2020/08/14   
+     */
+    this.getTagValues = function(options){
+      return this._topNQueryForVar(this.adhocFilterDS, options.key);
+
+    }           
+
+    /** It is used to get tag values for adhoc filters and variables.
+     *  Add by xuzh1 on 2020/08/14   
+     */    
+    this._topNQueryForVar = function(datasource, dimension){
+      var range = timeSrv.timeRange();
+      var from = moment(Number(range.from.valueOf().toString()));
+      var to = moment(Number(range.to.valueOf().toString()));
+
+      var metric = "count";
+      var target = {
+          "queryType": "topN",
+          "druidDS": datasource,
+          "dimension": dimension,
+          "druidMetric": metric,
+          "aggregators": [{"type": "count", "name": metric}],
+          "threshold": 250,
+          "isTopNQueryForVar": true
+      };
+
+      var promise = this._doQuery(from, to, 'all', target);
+      return promise.then(results => {
+          var l = _.map(results, (e) => {
+              return {"text": e.target};
+          });
+          return l;
+      });
     }
 
    //changes druid end

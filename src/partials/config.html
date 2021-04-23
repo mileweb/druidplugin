@@ -7,6 +7,7 @@
             <select class="gf-form-input" ng-model="ctrl.current.jsonData.periodGranularity"
                     spellcheck='false'>
                 <option value="">None</option>
+                <option value="dashboard">Dashboard</option>
                 <option value="Pacific/Pago_Pago">Pacific/Pago_Pago (-11:00) Pago Pago</option>
                 <option value="Pacific/Honolulu">Pacific/Honolulu	(-10:00) Hawaii</option>
                 <option value="America/Anchorage">America/Anchorage	(-09:00) Alaska
@@ -118,6 +119,20 @@
             </select>
             <info-popover mode="right-absolute">This enables the to query hourly data in different timezone.</info-popover>
         </div>
+    </div>
+    <div class="gf-form max-width-70">
+        <span class="gf-form-label">Datasources Regex</span>
+        <div class="gf-form-select-wrapper gf-form-select-wrapper--has-help-icon max-width-70">
+            <input type="text" class="gf-form-input input-medium" ng-model="ctrl.current.jsonData.dsRegex" spellcheck='false' placeholder="/pattern/ig">
+            <info-popover mode="right-absolute">Datasources Regex</info-popover>
+        </div>        
+    </div>   
+    <div class="gf-form max-width-70">
+        <span class="gf-form-label">Datasource For Ad Hoc Filter</span>
+        <div class="gf-form-select-wrapper gf-form-select-wrapper--has-help-icon max-width-50">
+            <input type="text" class="gf-form-input input-medium" ng-model="ctrl.current.jsonData.adhocFilterDS" spellcheck='false' placeholder="adHocFilterDS">
+            <info-popover mode="right-absolute">Datasource For Ad Hoc Filter</info-popover>
+        </div>        
     </div>
 </div>
 

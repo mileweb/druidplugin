@@ -12,8 +12,10 @@ export class DruidQueryCtrl extends QueryCtrl {
   addPostAggregatorMode: boolean;
   addDimensionsMode: boolean;
   addMetricsMode: boolean;
+  addScanColumnsMode: boolean;
   listDataSources: any;
   getDimensionsAndMetrics: any;
+  getScanColumns: any;
   getMetrics: any;
   getMetricsPlusDimensions: any;
   getDimensions: any;
@@ -31,7 +33,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       "timeseries": _.noop.bind(this),
       "groupBy": this.validateGroupByQuery.bind(this),
       "topN": this.validateTopNQuery.bind(this),
-      "select": this.validateSelectQuery.bind(this)
+      "scan": this.validateScanQuery.bind(this)
     };
     filterValidators = {
       "selector": this.validateSelectorFilter.bind(this),
@@ -39,35 +41,42 @@ export class DruidQueryCtrl extends QueryCtrl {
       "javascript": this.validateJavascriptFilter.bind(this),
       "in": this.validateInFilter.bind(this),
       "json": this.validateJsonFilter.bind(this),
+      "bound": this.validateBoundFilter.bind(this),
+      "like": this.validateLikeFilter.bind(this),
+      "search": this.validateSearchFilter.bind(this)
     };
     aggregatorValidators = {
       "count": this.validateCountAggregator,
-      "cardinality": _.partial(this.validateCardinalityAggregator.bind(this), 'cardinality'),
       "longSum": _.partial(this.validateSimpleAggregator.bind(this), 'longSum'),
       "doubleSum": _.partial(this.validateSimpleAggregator.bind(this), 'doubleSum'),
-      "approxHistogramFold": this.validateApproxHistogramFoldAggregator.bind(this),
-      "hyperUnique": _.partial(this.validateSimpleAggregator.bind(this), 'hyperUnique'),
-      "json": this.validateJsonAggregator,
+      "doubleMax": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMax'),
+      "doubleMin": _.partial(this.validateSimpleAggregator.bind(this), 'doubleMin'),
+      "quantilesDoublesSketch": this.validateQuantilesDoublesSketchAggregator.bind(this),
+      "javascript": this.validateJavascriptAggregator.bind(this),
       "thetaSketch": this.validateThetaSketchAggregator.bind(this)
     };
     postAggregatorValidators = {
       "arithmetic": this.validateArithmeticPostAggregator.bind(this),
       "max": this.validateMaxPostAggregator.bind(this),
       "min": this.validateMinPostAggregator.bind(this),
-      "quantile": this.validateQuantilePostAggregator.bind(this)
+      "quantilesDoublesSketchToQuantile":_.partial(this.validateQuantilePostAggregator.bind(this), 'quantilesDoublesSketchToQuantile'),
+      "javascript": this.validateJavascriptPostAggregator.bind(this),
+      "thetaSketchEstimate": _.partial(this.validateThetaSketchEstimatePostAggregator.bind(this), 'thetaSketchEstimate')
     };
 
     arithmeticPostAggregatorFns = {'+': null, '-': null, '*': null, '/': null};
     defaultQueryType = "timeseries";
     defaultFilterType = "selector";
     defaultAggregatorType = "count";
-    defaultPostAggregator = {type: 'arithmetic', 'fn': '+'};
-    customGranularities = ['second', 'minute', 'fifteen_minute', 'thirty_minute', 'hour', 'day', 'week', 'month', 'quarter', 'year', 'all'];
-    defaultCustomGranularity = 'minute';
+    // defaultPostAggregator = {type: 'arithmetic', 'fn': '+'};
+    defaultPostAggregatorType = 'arithmetic';
+    customGranularities = ['second', 'minute', 'five_minute', 'fifteen_minute', 'thirty_minute', 'hour', 'day', 'week', 'month', 'quarter', 'year', 'all'];
+    defaultCustomGranularity = 'five_minute';
     defaultSelectDimension = "";
     defaultSelectMetric = "";
-    defaultLimit = 5;
-
+    defaultScanColumn = "";
+    defaultLimit = 1000;
+    defaultTopNThreshold = 20;
 
   /** @ngInject **/
   constructor($scope, $injector, $q) {
@@ -94,6 +103,11 @@ export class DruidQueryCtrl extends QueryCtrl {
         this.clearCurrentSelectMetric();
       }
 
+      if(!this.target.currentScan){
+        this.target.currentScan = {};
+        this.clearCurrentScanColumn();
+      }
+
       if (!this.target.currentAggregator) {
         this.clearCurrentAggregator();
       }
@@ -108,6 +122,10 @@ export class DruidQueryCtrl extends QueryCtrl {
 
       if (!this.target.limit) {
         this.target.limit = this.defaultLimit;
+      }
+
+      if (!this.target.threshold) {
+        this.target.threshold = this.defaultTopNThreshold;
       }
 
     // needs to be defined here as it is called from typeahead
@@ -142,6 +160,17 @@ export class DruidQueryCtrl extends QueryCtrl {
       this.datasource.getDimensionsAndMetrics(this.target.druidDS)
         .then(callback);
     };
+
+    this.getScanColumns = (query, callback) => {
+      console.log("getScanColumns.query: " + query);
+      return this.datasource.getDimensionsAndMetrics(this.target.druidDS)
+      .then(function (dimsAndMetrics) {
+      callback([].concat(dimsAndMetrics.metrics).concat(dimsAndMetrics.dimensions));
+      });
+    };
+
+
+
 
     this.getFilterValues = (query, callback) => {
       let dimension = this.target.currentFilter.dimension;
@@ -232,7 +261,13 @@ export class DruidQueryCtrl extends QueryCtrl {
       if (!this.target.selectDimensions) {
         this.target.selectDimensions = [];
       }
-      this.target.selectDimensions.push(this.target.currentSelect.dimension);
+
+        var di = this.target.currentSelect.dimension;
+        if (di.indexOf("{") == 0) {
+            di = JSON.parse(di);
+        }
+
+      this.target.selectDimensions.push(di);
       this.clearCurrentSelectDimension();
     }
 
@@ -267,6 +302,30 @@ export class DruidQueryCtrl extends QueryCtrl {
     clearCurrentSelectMetric() {
       this.target.currentSelect.metric = this.defaultSelectMetric;
       this.addMetricsMode = false;
+      this.targetBlur();
+    }
+
+    addScanColumn(){
+      if(!this.addScanColumnsMode){
+        this.addScanColumnsMode = true;
+        return;
+      }
+      if(!this.target.scanColumns){
+        this.target.scanColumns = [];
+      }
+      this.target.scanColumns.push(this.target.currentScan.column);
+      this.clearCurrentScanColumn();
+      this.targetBlur();
+    }
+
+    removeScanColumn(index){
+      this.target.scanColumns.splice(index, 1);
+      this.targetBlur();
+    }
+
+    clearCurrentScanColumn(){
+      this.target.currentScan.column = this.defaultScanColumn;
+      this.addScanColumnsMode = false;
       this.targetBlur();
     }
 
@@ -320,7 +379,12 @@ export class DruidQueryCtrl extends QueryCtrl {
       this.target.errors = this.validateTarget();
       if (!this.target.errors.currentPostAggregator) {
         //Add new post aggregator to the list
-        this.target.postAggregators.push(this.target.currentPostAggregator);
+          if (this.target.currentPostAggregator.type == 'javascript') {
+              this.target.postAggregators.push(JSON.parse(this.target.currentPostAggregator.javascript));
+          } else {
+              this.target.postAggregators.push(this.target.currentPostAggregator);
+          }
+        // this.target.postAggregators.push(this.target.currentPostAggregator);
         this.clearCurrentPostAggregator();
         this.addPostAggregatorMode = false;
       }
@@ -328,13 +392,20 @@ export class DruidQueryCtrl extends QueryCtrl {
       this.targetBlur();
     }
 
+    editPostAggregator(index) {
+      this.addPostAggregatorMode = true;
+      var delPostAggregator = this.target.postAggregators.splice(index, 1);
+      this.target.currentPostAggregator = delPostAggregator[0];
+    }    
+
     removePostAggregator(index) {
       this.target.postAggregators.splice(index, 1);
       this.targetBlur();
     }
 
     clearCurrentPostAggregator() {
-      this.target.currentPostAggregator = _.clone(this.defaultPostAggregator);;
+      // this.target.currentPostAggregator = _.clone(this.defaultPostAggregator);;
+      this.target.currentPostAggregator = {type: this.defaultPostAggregatorType};
       this.addPostAggregatorMode = false;
       this.targetBlur();
     }
@@ -385,6 +456,21 @@ export class DruidQueryCtrl extends QueryCtrl {
       return true;
     }
 
+    validateThreshold(target, errs) {
+      if (!target.threshold) {
+        errs.threshold = "Must specify a threshold for TopN Query";
+        return false;
+      }
+      var intThreshold= parseInt(target.threshold);
+      if (isNaN(intThreshold)) {
+        errs.threshold = "Threshold must be a integer";
+        return false;
+      }
+      target.threshold = intThreshold;
+      return true;
+    }
+
+
     validateOrderBy(target) {
       if (target.orderBy && !Array.isArray(target.orderBy)) {
         target.orderBy = target.orderBy.split(",");
@@ -393,13 +479,19 @@ export class DruidQueryCtrl extends QueryCtrl {
     }
 
     validateGroupByQuery(target, errs) {
-      if (target.groupBy && !Array.isArray(target.groupBy)) {
-        target.groupBy = target.groupBy.split(",");
-      }
-      if (!target.groupBy) {
-        errs.groupBy = "Must list dimensions to group by.";
-        return false;
-      }
+//      if (target.groupBy && !Array.isArray(target.groupBy)) {
+//        target.groupBy = target.groupBy.split(",");
+//      }
+//      if (!target.groupBy) {
+//        errs.groupBy = "Must list dimensions to group by.";
+//        return false;
+//      }
+
+        if (!this.target.selectDimensions || this.target.selectDimensions.length == 0) {
+            errs.selectDimensions = "Must add dimension(s).";
+            return false;
+        }
+
       if (!this.validateLimit(target, errs) || !this.validateOrderBy(target)) {
         return false;
       }
@@ -407,27 +499,33 @@ export class DruidQueryCtrl extends QueryCtrl {
     }
 
     validateTopNQuery(target, errs) {
-      if (!target.dimension) {
-        errs.dimension = "Must specify a dimension";
-        return false;
-      }
+//      if (!target.dimension) {
+//        errs.dimension = "Must specify a dimension";
+//        return false;
+//      }
+
+        if (!this.target.selectDimensions || this.target.selectDimensions.length == 0) {
+            errs.selectDimensions = "Must add dimension(s).";
+            return false;
+        }
+
       if (!target.druidMetric) {
         errs.druidMetric = "Must specify a metric";
         return false;
       }
-      console.log(this, this.validateLimit);
-      if (!this.validateLimit(target, errs)) {
+      // console.log(this, this.validateLimit);
+      if (!this.validateThreshold(target, errs)) {
         return false;
       }
       return true;
     }
 
-    validateSelectQuery(target, errs) {
-      if (!target.selectThreshold && target.selectThreshold <= 0) {
-        errs.selectThreshold = "Must specify a positive number";
+
+    validateScanQuery(target, errs){
+      if (!this.validateLimit(target, errs)) {
         return false;
-      }
-      return true;
+      }     
+      return true
     }
 
     validateSelectorFilter(target) {
@@ -488,6 +586,56 @@ export class DruidQueryCtrl extends QueryCtrl {
         return null;
     }
 
+    validateBoundFilter(target){
+      if (!target.currentFilter.dimension) {
+        return "Must provide metric value for bound filter.";
+      }
+
+      if (!target.currentFilter.lower && !target.currentFilter.upper ) {
+        return "Must provide at least one value of lower and upper.";
+      }
+
+      if(target.currentFilter.lower && !this.isNumeric(target.currentFilter.lower)){
+        return "Type of lower must be numeric type"
+      }
+
+      if(target.currentFilter.upper && !this.isNumeric(target.currentFilter.upper)){
+        return "Type of upper must be numeric type"
+      }
+
+      if(target.currentFilter.lower && target.currentFilter.upper && Number(target.currentFilter.lower) > Number(target.currentFilter.upper)){
+        return "The lower value must be less than or equal to the upper value"
+      }      
+
+      target.currentFilter.ordering = "numeric";
+
+      return null;
+    }
+
+    validateLikeFilter(target){
+      if (!target.currentFilter.dimension) {
+        return "Must provide dimension name for like filter.";
+      }
+
+      if (!target.currentFilter.pattern) {
+        return "Must provide pattern for like filter"
+      }
+
+      return null;
+    }
+
+    validateSearchFilter(target){
+      if (!target.currentFilter.dimension) {
+        return "Must provide dimension name for search filter.";
+      }
+
+      if (!target.currentFilter.query) {
+        return "Must provide query for search filter"
+      }
+
+      return null;
+    }
+
     validateCountAggregator(target) {
       if (!target.currentAggregator.name) {
         return "Must provide an output name for count aggregator.";
@@ -495,28 +643,19 @@ export class DruidQueryCtrl extends QueryCtrl {
       return null;
     }
 
-    validateJsonAggregator(target) {
-      if (!target.currentAggregator.value) {
-        return "Must provide an value for json aggregator.";
-      }
-      if(!target.currentAggregator.value.toString().includes('$')){
-        try {
-            JSON.parse(target.currentAggregator.value);
-        } catch (e) {
-            throw "Must provide valid json aggregator";
+    validateJavascriptAggregator(target) {
+      try {
+        var json = JSON.parse(target.currentAggregator.value);
+        if (!json || !json['type'] || !json['name'] || !json['fieldNames']) {
+            return "Must specify type, name and fieldNames.";
+        }else if(!json['fnAggregate'] || !json['fnCombine'] || !json['fnReset']){
+            return "Must specify fnAggregate, fnCombine and fnReset.";
         }
-      }
-      return null;
+    } catch (e) {
+        return "Must provide valid json aggregator.";
     }
-
-    validateCardinalityAggregator(type, target) {
-      if (!target.currentAggregator.name) {
-        return "Must provide an output name for " + type + " aggregator.";
-      }
-    
-      return null;
+    return null;
     }
-
     validateSimpleAggregator(type, target) {
       if (!target.currentAggregator.name) {
         return "Must provide an output name for " + type + " aggregator.";
@@ -528,13 +667,13 @@ export class DruidQueryCtrl extends QueryCtrl {
       return null;
     }
 
-    validateApproxHistogramFoldAggregator(target) {
-      var err = this.validateSimpleAggregator('approxHistogramFold', target);
-      if (err) { return err; }
-      //TODO - check that resolution and numBuckets are ints (if given)
-      //TODO - check that lowerLimit and upperLimit are flots (if given)
-      return null;
-    }
+
+   validateQuantilesDoublesSketchAggregator(target) {
+    var err = this.validateSimpleAggregator('quantilesDoublesSketch', target);
+    if (err) { return err; }
+    //TODO - check that parameter k is a power of 2 from 2 to 32768 (if given)
+    return null;
+  }
 
     validateThetaSketchAggregator(target) {
       var err = this.validateSimpleAggregator('thetaSketch', target);
@@ -565,11 +704,42 @@ export class DruidQueryCtrl extends QueryCtrl {
       return null;
     }
 
-    validateQuantilePostAggregator(target) {
-      var err = this.validateSimplePostAggregator('quantile', target);
-      if (err) { return err; }
-      if (!target.currentPostAggregator.probability) {
-        return "Must provide a probability for the quantile post aggregator.";
+    validateQuantilePostAggregator(type, target) {
+      if (!target.currentPostAggregator.name) {
+        return "Must provide an output name for " + type + " post aggregator.";
+      }
+      if (!target.currentPostAggregator.field) {
+        return "Must provide an quantil aggregator name for " + type + " post aggregator.";
+      }
+
+      var fraction = target.currentPostAggregator.fraction;
+      if (!fraction) {
+        return "Must provide an fraction for " + type + " post aggregator.";
+      }else if(isNaN(fraction) || fraction === null || fraction === ""){
+        return "Fraction must be number type";
+      }      
+      //TODO - check that field is a valid aggregation (exists and of correct type)
+      return null;      
+    }
+
+    validateJavascriptPostAggregator(target) {
+        try {
+            var json = JSON.parse(target.currentPostAggregator.javascript);
+            if (!json || !json['name'] || !json['fieldNames']) {
+                return "Must specify name and fieldNames.";
+            }
+        } catch (e) {
+            return "Must provide valid json post aggregator.";
+        }
+        return null;
+    }
+
+    validateThetaSketchEstimatePostAggregator(type, target){
+      if (!target.currentPostAggregator.name) {
+        return "Must provide an output name for " + type + " post aggregator.";
+      }
+      if (!target.currentPostAggregator.field) {
+        return "Must provide an thetaSketch aggregator name for " + type + " post aggregator.";
       }
       return null;
     }
@@ -648,7 +818,7 @@ export class DruidQueryCtrl extends QueryCtrl {
         }
       }
 
-      if (_.isEmpty(this.target.aggregators) && !_.isEqual(this.target.queryType, "select")) {
+      if (_.isEmpty(this.target.aggregators) && !_.isEqual(this.target.queryType, "scan")) {
         errs.aggregators = "You must supply at least one aggregator";
       }
 
@@ -665,4 +835,10 @@ export class DruidQueryCtrl extends QueryCtrl {
 
     return errs;
   }
+
+  isNumeric(str: String) {
+    var numericStr = Number(str);
+    return !isNaN(numericStr);
+  }
+
 }
