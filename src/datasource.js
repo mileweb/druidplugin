@@ -913,7 +913,6 @@ function (angular, _, dateMath, moment) {
           continue;
         }
 
-
         target.filters.fields.push({
           "type": "in",
           "dimension": condition[0],
