@@ -223,7 +223,7 @@ function (angular, _, dateMath, moment) {
         //adds javascript type aggregator
         if(aggregator.type === 'javascript'){
           var jsAggHidden = aggregator.hidden;
-          aggregator= JSON.parse(aggregator.function);
+          aggregator= JSON.parse(aggregator.json);
           aggregator.hidden = jsAggHidden;
         }
 
