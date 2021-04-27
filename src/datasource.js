@@ -240,7 +240,12 @@ function (angular, _, dateMath, moment) {
             "type": "fieldAccess",
             "fieldName": postAgg.field
           }
+        }else if(postAgg.type === 'javascript'){
+          var jsPostAggHidden = postAgg.hidden;
+          postAggregator= JSON.parse(postAgg.json);
+          postAggregator.hidden = jsPostAggHidden;
         }
+        
         return postAgg;
       });
       var groupBy = _.map(target.groupBy, (e) => { return templateSrv.replace(e) });
