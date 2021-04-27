@@ -342,7 +342,16 @@ export class DruidQueryCtrl extends QueryCtrl {
       this.target.errors = this.validateTarget();
       if (!this.target.errors.currentAggregator) {
         //Add new aggregator to the list
-        this.target.aggregators.push(this.target.currentAggregator);
+
+      if (this.target.currentPostAggregator.type == 'javascript') {
+          var currentAggregator = JSON.parse(this.target.currentAggregator.function);
+          currentAggregator.hidden = this.target.currentAggregator.hidden;
+          this.target.aggregators.push(currentAggregator);
+      } else {
+          this.target.aggregators.push(this.target.currentAggregator);
+      }
+
+        // this.target.aggregators.push(this.target.currentAggregator);
         this.clearCurrentAggregator();
         this.addAggregatorMode = false;
       }
@@ -380,7 +389,9 @@ export class DruidQueryCtrl extends QueryCtrl {
       if (!this.target.errors.currentPostAggregator) {
         //Add new post aggregator to the list
           if (this.target.currentPostAggregator.type == 'javascript') {
-              this.target.postAggregators.push(JSON.parse(this.target.currentPostAggregator.javascript));
+              var currentPostAggregator = JSON.parse(this.target.currentPostAggregator.javascript);
+              currentPostAggregator.hidden = this.target.currentPostAggregator.hidden;
+              this.target.postAggregators.push(currentPostAggregator);
           } else {
               this.target.postAggregators.push(this.target.currentPostAggregator);
           }

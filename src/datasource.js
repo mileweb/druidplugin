@@ -221,12 +221,13 @@ function (angular, _, dateMath, moment) {
         }
 
         //adds javascript type aggregator
+        /** 
         if(aggregator.type === 'javascript'){
           var jsAggHidden = aggregator.hidden;
           aggregator= JSON.parse(aggregator.function);
           aggregator.hidden = jsAggHidden;
         }
-
+        */
         return aggregator;
       }
 
@@ -234,20 +235,12 @@ function (angular, _, dateMath, moment) {
       var filters = target.filters;
       var aggregators = target.aggregators && target.aggregators.map(splitCardinalityFields);
       var postAggregators = _.map(target.postAggregators, (postAgg) => {
-        if(postAgg.type === "quantilesDoublesSketchToQuantile"){
+        if(postAgg.type === "quantilesDoublesSketchToQuantile" || postAgg.type === "thetaSketchEstimate"){
 
           postAgg.field = {
             "type": "fieldAccess",
             "fieldName": postAgg.field
           }
-        }else if(postAgg.type === "thetaSketchEstimate"){
-
-          postAgg.field = {
-            "type": "fieldAccess",
-            // "name": postAgg.field,
-            "fieldName": postAgg.field
-          }
-
         }
         return postAgg;
       });
