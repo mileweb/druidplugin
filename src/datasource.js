@@ -242,10 +242,10 @@ function (angular, _, dateMath, moment) {
           }
         }else if(postAgg.type === 'javascript'){
           var jsPostAggHidden = postAgg.hidden;
-          postAggregator= JSON.parse(postAgg.json);
-          postAggregator.hidden = jsPostAggHidden;
+          postAgg = JSON.parse(postAgg.json);
+          postAgg.hidden = jsPostAggHidden;
         }
-        
+
         return postAgg;
       });
       var groupBy = _.map(target.groupBy, (e) => { return templateSrv.replace(e) });
