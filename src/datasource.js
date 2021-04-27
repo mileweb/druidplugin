@@ -83,7 +83,7 @@ function (angular, _, dateMath, moment) {
       "doubleMax": _.partialRight(replaceTemplateValues, ['fieldName']),
       "doubleMin": _.partialRight(replaceTemplateValues, ['fieldName']),
       "quantilesDoublesSketch": _.partialRight(replaceTemplateValues, ['fieldName']),
-      "javascript": _.partialRight(replaceTemplateValues, ['function']),
+      "javascript": _.partialRight(replaceTemplateValues, ['json']),
       "thetaSketch": _.partialRight(replaceTemplateValues, ['fieldName'])
     };
 
@@ -221,13 +221,12 @@ function (angular, _, dateMath, moment) {
         }
 
         //adds javascript type aggregator
-        /** 
         if(aggregator.type === 'javascript'){
           var jsAggHidden = aggregator.hidden;
           aggregator= JSON.parse(aggregator.function);
           aggregator.hidden = jsAggHidden;
         }
-        */
+
         return aggregator;
       }
 

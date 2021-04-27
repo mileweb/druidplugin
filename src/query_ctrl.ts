@@ -342,16 +342,7 @@ export class DruidQueryCtrl extends QueryCtrl {
       this.target.errors = this.validateTarget();
       if (!this.target.errors.currentAggregator) {
         //Add new aggregator to the list
-
-      if (this.target.currentAggregator.type == 'javascript') {
-          var currentAggregator = JSON.parse(this.target.currentAggregator.function);
-          currentAggregator.hidden = this.target.currentAggregator.hidden;
-          this.target.aggregators.push(currentAggregator);
-      } else {
-          this.target.aggregators.push(this.target.currentAggregator);
-      }
-
-        // this.target.aggregators.push(this.target.currentAggregator);
+        this.target.aggregators.push(this.target.currentAggregator);
         this.clearCurrentAggregator();
         this.addAggregatorMode = false;
       }
@@ -656,7 +647,7 @@ export class DruidQueryCtrl extends QueryCtrl {
 
     validateJavascriptAggregator(target) {
       try {
-        var json = JSON.parse(target.currentAggregator.function);
+        var json = JSON.parse(target.currentAggregator.json);
         if (!json || !json['type'] || !json['name'] || !json['fieldNames']) {
             return "Must specify type, name and fieldNames.";
         }else if(!json['fnAggregate'] || !json['fnCombine'] || !json['fnReset']){
@@ -665,7 +656,7 @@ export class DruidQueryCtrl extends QueryCtrl {
     } catch (e) {
         return "Must provide valid javascript aggregator.";
     }
-    return null;
+        return null;
     }
     validateSimpleAggregator(type, target) {
       if (!target.currentAggregator.name) {
@@ -740,7 +731,7 @@ export class DruidQueryCtrl extends QueryCtrl {
                 return "Must specify name and fieldNames.";
             }
         } catch (e) {
-            return "Must provide valid json post aggregator.";
+            return "Must provide valid javascript post aggregator.";
         }
         return null;
     }

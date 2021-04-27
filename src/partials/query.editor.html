@@ -433,7 +433,7 @@
         </div>
         <div ng-switch-when="javascript">
           <label class="gf-form-label">
-            {{aggregator.type}}:&nbsp;{{aggregator.function}}
+            {{aggregator.type}}:&nbsp;{{aggregator.json}}
             <a ng-click="ctrl.editAggregator($index)">
               <i class="fa fa-pencil"></i>
             </a>
@@ -497,7 +497,7 @@
       <gf-form-switch ng-switch-when="quantilesDoublesSketch" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentAggregator.hidden"></gf-form-switch>
     </div>
     <div class="gf-form" ng-show="ctrl.addAggregatorMode" ng-switch on="ctrl.target.currentAggregator.type">
-      <input type="text" ng-switch-when="javascript" class="input-small gf-form-input" spellcheck='false' ng-model="ctrl.target.currentAggregator.function" placeholder="json" ng-blur="ctrl.targetBlur()">
+      <input type="text" ng-switch-when="javascript" class="input-small gf-form-input" spellcheck='false' ng-model="ctrl.target.currentAggregator.json" placeholder="json" ng-blur="ctrl.targetBlur()">
       <gf-form-switch ng-switch-when="javascript" class="gf-form" label="Hidden" label-class="query-keyword" checked="ctrl.target.currentAggregator.hidden"></gf-form-switch>
     </div>
     <div class="gf-form" ng-show="ctrl.addAggregatorMode" ng-switch on="ctrl.target.currentAggregator.type">
