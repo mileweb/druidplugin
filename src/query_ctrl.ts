@@ -645,14 +645,14 @@ export class DruidQueryCtrl extends QueryCtrl {
 
     validateJavascriptAggregator(target) {
       try {
-        var json = JSON.parse(target.currentAggregator.value);
+        var json = JSON.parse(target.currentAggregator.function);
         if (!json || !json['type'] || !json['name'] || !json['fieldNames']) {
             return "Must specify type, name and fieldNames.";
         }else if(!json['fnAggregate'] || !json['fnCombine'] || !json['fnReset']){
             return "Must specify fnAggregate, fnCombine and fnReset.";
         }
     } catch (e) {
-        return "Must provide valid json aggregator.";
+        return "Must provide valid javascript aggregator.";
     }
     return null;
     }
