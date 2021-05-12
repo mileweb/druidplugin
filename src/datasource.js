@@ -83,7 +83,7 @@ function (angular, _, dateMath, moment) {
       "doubleMax": _.partialRight(replaceTemplateValues, ['fieldName']),
       "doubleMin": _.partialRight(replaceTemplateValues, ['fieldName']),
       "quantilesDoublesSketch": _.partialRight(replaceTemplateValues, ['fieldName']),
-      "javascript": _.partialRight(replaceTemplateValues, ['value']),
+      "javascript": _.partialRight(replaceTemplateValues, ['json']),
       "thetaSketch": _.partialRight(replaceTemplateValues, ['fieldName'])
     };
 
@@ -223,7 +223,7 @@ function (angular, _, dateMath, moment) {
         //adds javascript type aggregator
         if(aggregator.type === 'javascript'){
           var jsAggHidden = aggregator.hidden;
-          aggregator= JSON.parse(aggregator.value);
+          aggregator= JSON.parse(aggregator.json);
           aggregator.hidden = jsAggHidden;
         }
 
@@ -234,21 +234,18 @@ function (angular, _, dateMath, moment) {
       var filters = target.filters;
       var aggregators = target.aggregators && target.aggregators.map(splitCardinalityFields);
       var postAggregators = _.map(target.postAggregators, (postAgg) => {
-        if(postAgg.type === "quantilesDoublesSketchToQuantile"){
+        if(postAgg.type === "quantilesDoublesSketchToQuantile" || postAgg.type === "thetaSketchEstimate"){
 
           postAgg.field = {
             "type": "fieldAccess",
             "fieldName": postAgg.field
           }
-        }else if(postAgg.type === "thetaSketchEstimate"){
-
-          postAgg.field = {
-            "type": "fieldAccess",
-            // "name": postAgg.field,
-            "fieldName": postAgg.field
-          }
-
+        }else if(postAgg.type === 'javascript'){
+          var jsPostAggHidden = postAgg.hidden;
+          postAgg = JSON.parse(postAgg.json);
+          postAgg.hidden = jsPostAggHidden;
         }
+
         return postAgg;
       });
       var groupBy = _.map(target.groupBy, (e) => { return templateSrv.replace(e) });

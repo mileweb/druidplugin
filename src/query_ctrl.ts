@@ -379,12 +379,16 @@ export class DruidQueryCtrl extends QueryCtrl {
       this.target.errors = this.validateTarget();
       if (!this.target.errors.currentPostAggregator) {
         //Add new post aggregator to the list
+        /** 
           if (this.target.currentPostAggregator.type == 'javascript') {
-              this.target.postAggregators.push(JSON.parse(this.target.currentPostAggregator.javascript));
+              var currentPostAggregator = JSON.parse(this.target.currentPostAggregator.javascript);
+              currentPostAggregator.hidden = this.target.currentPostAggregator.hidden;
+              this.target.postAggregators.push(currentPostAggregator);
           } else {
               this.target.postAggregators.push(this.target.currentPostAggregator);
           }
-        // this.target.postAggregators.push(this.target.currentPostAggregator);
+          */
+        this.target.postAggregators.push(this.target.currentPostAggregator);
         this.clearCurrentPostAggregator();
         this.addPostAggregatorMode = false;
       }
@@ -645,16 +649,16 @@ export class DruidQueryCtrl extends QueryCtrl {
 
     validateJavascriptAggregator(target) {
       try {
-        var json = JSON.parse(target.currentAggregator.value);
+        var json = JSON.parse(target.currentAggregator.json);
         if (!json || !json['type'] || !json['name'] || !json['fieldNames']) {
             return "Must specify type, name and fieldNames.";
         }else if(!json['fnAggregate'] || !json['fnCombine'] || !json['fnReset']){
             return "Must specify fnAggregate, fnCombine and fnReset.";
         }
     } catch (e) {
-        return "Must provide valid json aggregator.";
+        return "Must provide valid javascript aggregator.";
     }
-    return null;
+        return null;
     }
     validateSimpleAggregator(type, target) {
       if (!target.currentAggregator.name) {
@@ -724,12 +728,12 @@ export class DruidQueryCtrl extends QueryCtrl {
 
     validateJavascriptPostAggregator(target) {
         try {
-            var json = JSON.parse(target.currentPostAggregator.javascript);
+            var json = JSON.parse(target.currentPostAggregator.json);
             if (!json || !json['name'] || !json['fieldNames']) {
                 return "Must specify name and fieldNames.";
             }
         } catch (e) {
-            return "Must provide valid json post aggregator.";
+            return "Must provide valid javascript post aggregator.";
         }
         return null;
     }
