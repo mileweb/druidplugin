@@ -342,6 +342,13 @@ export class DruidQueryCtrl extends QueryCtrl {
       this.target.errors = this.validateTarget();
       if (!this.target.errors.currentAggregator) {
         //Add new aggregator to the list
+        if (this.target.currentAggregator.type == 'javascript') {
+            var str = this.target.currentAggregator.json;
+            var hidden = this.target.currentAggregator.hidden;
+            this.target.currentAggregator = JSON.parse(str);
+            this.target.currentAggregator.json = str;
+            this.target.currentAggregator.hidden = hidden;
+        }
         this.target.aggregators.push(this.target.currentAggregator);
         this.clearCurrentAggregator();
         this.addAggregatorMode = false;
